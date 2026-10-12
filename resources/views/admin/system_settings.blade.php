@@ -23,11 +23,7 @@
                     $statusColor = $student['color'] === 'red' ? '#d43945' : ($student['color'] === 'yellow' ? '#f4b400' : '#18a062');
                 @endphp
                 <div class="student-card" style="border-left: 6px solid {{ $statusColor }};">
-                    @if(!empty($student['avatar']))
-                        <img src="{{ $student['avatar'] }}" alt="{{ $student['first_name'] }} {{ $student['last_name'] }}" class="avatar avatar-image" />
-                    @else
-                        <div class="avatar">{{ strtoupper(substr($student['first_name'],0,1)) }}{{ strtoupper(substr($student['last_name'],0,1)) }}</div>
-                    @endif
+                    <div class="avatar">{{ strtoupper(substr($student['first_name'],0,1)) }}{{ strtoupper(substr($student['last_name'],0,1)) }}</div>
                     <div class="student-info">
                         <h3>{{ $student['first_name'] }} {{ $student['last_name'] }}</h3>
                         <p>{{ $student['student_id'] ?? 'No ID' }} · {{ ucfirst($student['sport'] ?? 'N/A') }} · {{ $student['year_level'] ?? 'N/A' }} · {{ $student['course'] ?? 'N/A' }}</p>

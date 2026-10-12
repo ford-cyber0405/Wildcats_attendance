@@ -36,6 +36,10 @@
                         @csrf
                         <button type="submit" class="button button-primary" style="padding: 16px 24px; min-width: 180px; font-size: 1rem;">Approve request</button>
                     </form>
+                    <form method="POST" action="/admin/special-training/{{ $request['id'] }}/reject" style="margin: 12px 0 0;">
+                        @csrf
+                        <button type="submit" class="button button-secondary" style="padding: 16px 24px; min-width: 180px; font-size: 1rem;">Reject request</button>
+                    </form>
                 </div>
             </div>
 

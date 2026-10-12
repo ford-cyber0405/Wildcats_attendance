@@ -30,6 +30,10 @@
                                 @csrf
                                 <button type="submit" class="button button-primary" style="padding: 12px 18px; min-width: 140px;">Approve</button>
                             </form>
+                            <form method="POST" action="/admin/excuses/{{ $excuse['id'] }}/reject" style="margin: 0; width: 100%; display: flex; justify-content: flex-end;">
+                                @csrf
+                                <button type="submit" class="button button-secondary" style="padding: 12px 18px; min-width: 140px;">Reject</button>
+                            </form>
                         </div>
                     </div>
                     <div style="margin-top: 20px; padding: 20px; border-radius: 22px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);">

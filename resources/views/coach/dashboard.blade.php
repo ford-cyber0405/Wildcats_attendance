@@ -83,11 +83,7 @@
                 $borderColor = 'rgba(255,255,255,0.06)';
             @endphp
             <a href="/coach/athlete/{{ $student['student_id'] }}" class="student-card coach-student-card" style="display:block; border-radius: 20px; padding: 14px; background: {{ $cardBg }}; border: 1px solid {{ $borderColor }}; box-shadow: 0 2px 8px rgba(0,0,0,0.12), {{ $glow }}; border-left: 6px solid {{ $colorHex }}; text-decoration: none; color: inherit;">
-                @if(!empty($student['avatar']))
-                    <img src="{{ $student['avatar'] }}" alt="{{ $student['first_name'] }} {{ $student['last_name'] }}" class="avatar avatar-image" style="width:48px;height:48px;object-fit:cover;border-radius:12px;" />
-                @else
-                    <div class="avatar" style="width:48px;height:48px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;background:rgba(255,255,255,0.08);color:#fff;">{{ strtoupper(substr($student['first_name'],0,1)) }}{{ strtoupper(substr($student['last_name'],0,1)) }}</div>
-                @endif
+                <div class="avatar" style="width:48px;height:48px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;background:rgba(212,175,55,0.18);color:#fff;">{{ strtoupper(substr($student['first_name'],0,1)) }}{{ strtoupper(substr($student['last_name'],0,1)) }}</div>
                 <div class="student-info" style="min-width:0;margin-left:12px;">
                     <h3 style="margin:0 0 6px;font-size:0.98rem;line-height:1.2;">{{ $student['first_name'] }} {{ $student['last_name'] }}</h3>
                     <p style="margin:0;color:rgba(247,245,242,0.72);font-size:0.84rem;line-height:1.4;">{{ $student['student_id'] }} · {{ ucfirst($student['sport']) }} · {{ $student['year_level'] }} · {{ $student['course'] }}</p>

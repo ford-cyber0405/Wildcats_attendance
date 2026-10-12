@@ -17,3 +17,4 @@ Artisan::command('attendance:auto-mark-absent {--date=} ', function ($date = nul
 })->purpose('Mark any student without a check-in for the day as absent.');
 
 Schedule::command('attendance:auto-mark-absent')->dailyAt('23:59');
+Schedule::command('attendance:mark-absentees')->everyFiveMinutes();

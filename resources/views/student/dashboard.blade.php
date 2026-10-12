@@ -3,6 +3,77 @@
 @section('title', 'Student Dashboard | UM Attendance')
 
 @section('content')
+<style>
+    .student-attendance-action {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin: 28px 0 32px;
+        padding: 0 12px;
+    }
+
+    .student-attendance-form {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin: 0;
+    }
+
+    .student-attendance-button {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: min(220px, 70vw);
+        aspect-ratio: 1;
+        height: auto;
+        min-height: 0;
+        padding: 24px;
+        border: 2px solid rgba(255, 238, 174, 0.9);
+        border-radius: 50%;
+        background: linear-gradient(145deg, #ffe58a 0%, #f4c542 48%, #d4af37 100%);
+        color: #35000f;
+        box-shadow: 0 14px 34px rgba(212, 175, 55, 0.28), inset 0 2px 0 rgba(255, 255, 255, 0.45);
+        font-size: 1.02rem;
+        font-weight: 700;
+        line-height: 1.3;
+        text-align: center;
+        animation: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    }
+
+    .student-attendance-button i {
+        font-size: 2rem;
+        line-height: 1;
+    }
+
+    .student-attendance-button:hover:not(:disabled) {
+        transform: translateY(-3px);
+        box-shadow: 0 19px 40px rgba(212, 175, 55, 0.36), inset 0 2px 0 rgba(255, 255, 255, 0.5);
+        filter: brightness(1.03);
+    }
+
+    .student-attendance-button:active:not(:disabled) {
+        transform: translateY(0) scale(0.98);
+    }
+
+    .student-attendance-button:focus-visible {
+        outline: 3px solid #fff1b8;
+        outline-offset: 4px;
+    }
+
+    .student-attendance-button:disabled {
+        cursor: not-allowed;
+        filter: saturate(0.65);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .student-attendance-button {
+            transition: none;
+        }
+    }
+</style>
 <div class="page-panel">
     <div class="grid-two">
         <div class="large-box">
@@ -26,39 +97,44 @@
                 <span><span class="dot gray"></span> No Training</span>
             </div>
 
-            <div class="table-grid action-grid" style="margin-top: 24px;">
-                <form method="POST" action="/student/attend">@csrf<button type="submit" name="action" value="present" class="button button-present" {{ $isTodaySunday || $isBeforeStartDate || (!empty($todayAttendance) && $todayAttendance['status'] === 'no_training') ? 'disabled' : '' }}>Present</button></form>
-                <form method="POST" action="/student/attend">@csrf<button type="submit" name="action" value="late" class="button button-late" {{ $isTodaySunday || $isBeforeStartDate || (!empty($todayAttendance) && $todayAttendance['status'] === 'no_training') ? 'disabled' : '' }}>Late</button></form>
-                <form method="POST" action="/student/attend">@csrf<button type="submit" name="action" value="absent" class="button button-absent" {{ $isTodaySunday || $isBeforeStartDate || (!empty($todayAttendance) && $todayAttendance['status'] === 'no_training') ? 'disabled' : '' }}>Absent</button></form>
-                <form method="GET" action="/student/excuse"><button type="submit" class="button button-excuse">Request Excuse</button></form>
+            <div class="student-attendance-action">
+                <form method="POST" action="/student/attend" class="student-attendance-form">
+                    @csrf
+                    <button type="submit" class="button button-present student-attendance-button" {{ $isTodaySunday || $isBeforeStartDate || (!empty($todayAttendance) && $todayAttendance['status'] === 'no_training') ? 'disabled' : '' }}>
+                        <i class="bi bi-calendar-check" aria-hidden="true"></i>
+                        <span>Mark Attendance</span>
+                    </button>
+                </form>
             </div>
 
-            <div style="margin-top: 28px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
-                <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
-                    <span class="badge">Month: {{ $monthName }} {{ $year }}</span>
-                    <span class="badge">Present: {{ $counts['present'] }}</span>
-                    <span class="badge">Late: {{ $counts['late'] }}</span>
-                    <span class="badge">Absent: {{ $counts['absent'] }}</span>
-                    <span class="badge">Excuse: {{ $counts['excuse'] }}</span>
-                    <span class="badge">Special Training: {{ $counts['special_training'] }}</span>
-                        
-                </div>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    @php
-                        $prevMonth = $month - 1;
-                        $prevYear = $year;
-                        if ($prevMonth < 1) {
-                            $prevMonth = 12;
-                            $prevYear--;
-                        }
-                        $nextMonth = $month + 1;
-                        $nextYear = $year;
-                        if ($nextMonth > 12) {
-                            $nextMonth = 1;
-                            $nextYear++;
-                        }
-                        $isCurrentMonth = $month === now()->month && $year === now()->year;
-                    @endphp
+            @php
+                $prevMonth = $month - 1;
+                $prevYear = $year;
+                if ($prevMonth < 1) {
+                    $prevMonth = 12;
+                    $prevYear--;
+                }
+                $nextMonth = $month + 1;
+                $nextYear = $year;
+                if ($nextMonth > 12) {
+                    $nextMonth = 1;
+                    $nextYear++;
+                }
+                $isCurrentMonth = $month === now()->month && $year === now()->year;
+            @endphp
+
+            <div class="dashboard-status-row" style="margin-top: 28px;">
+                <span class="badge">Present: {{ $counts['present'] }}</span>
+                <span class="badge">Late: {{ $counts['late'] }}</span>
+                <span class="badge">Absent: {{ $counts['absent'] }}</span>
+                <span class="badge">Excuse: {{ $counts['excuse'] }}</span>
+                <span class="badge">Special Training: {{ $counts['special_training'] }}</span>
+            </div>
+
+            <div class="dashboard-nav-row" style="margin-top: 14px;">
+                <span class="badge">Month: {{ $monthName }} {{ $year }}</span>
+
+                <div class="dashboard-nav-controls">
                     <a href="/student/dashboard?year={{ $prevYear }}&month={{ $prevMonth }}" class="button button-secondary" style="padding: 10px 14px; font-size: 0.9rem;"><i class="bi bi-chevron-left"></i> Previous</a>
                     @if (!$isCurrentMonth)
                         <a href="/student/dashboard" class="button button-primary" style="padding: 10px 14px; font-size: 0.9rem;">Today</a>
@@ -92,67 +168,6 @@
             </div>
         </div>
 
-        <div class="large-box">
-            <h3 style="margin-top: 0;">Profile Snapshot</h3>
-            <div style="display: grid; gap: 22px;">
-                <div style="display: flex; gap: 18px; align-items: center;">
-                    @if(!empty($user['avatar']))
-                        <img src="{{ $user['avatar'] }}" alt="Profile photo" class="avatar avatar-image" />
-                    @else
-                        <div class="avatar">{{ strtoupper(substr($user['first_name'],0,1)) }}{{ strtoupper(substr($user['last_name'],0,1)) }}</div>
-                    @endif
-                    <div>
-                        <h3 style="margin: 0;">{{ $user['first_name'] }} {{ $user['middle_name'] ? $user['middle_name'] . ' ' : '' }}{{ $user['last_name'] }}</h3>
-                        <p style="margin: 6px 0 0; color: var(--um-gray);">{{ $user['contact'] }}</p>
-                        <p style="margin: 4px 0 0; color: var(--um-gray);">{{ ucfirst($user['sport']) }} athlete</p>
-                    </div>
-                </div>
-
-                <div class="form-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px;">
-                        <h4 style="margin:0;">Upcoming Training</h4>
-                        @if(!empty($unreadSchedule))
-                            <span style="display:inline-flex; align-items:center; padding:6px 10px; border-radius:999px; background:rgba(212,175,55,0.14); color:#f4c542; font-size:0.82rem; font-weight:700;">New Schedule Posted</span>
-                        @endif
-                    </div>
-
-                    @if(!empty($unreadSchedule))
-                        <x-notification-card
-                            title="New Schedule Posted"
-                            description="Your coach posted a new training schedule for your team. Acknowledge it to keep the update clear."
-                            actionUrl="/student/notifications/acknowledge/schedule"
-                            actionLabel="Acknowledge"
-                        />
-                    @endif
-
-                    @if(!empty($latestSchedule))
-                        <div style="padding: 18px; border-radius: 22px; background: rgba(255,255,255,0.08); border: 1px solid rgba(212,175,55,0.12);">
-                            <strong>{{ date('F j, Y', strtotime($latestSchedule['date'])) }}</strong>
-                            <p style="margin: 8px 0 0; color: var(--um-gray);">{{ $latestSchedule['item']['venue'] }} · {{ App\Services\AttendanceStore::formatDisplayTime($latestSchedule['item']['time'] ?? null) }}</p>
-                        </div>
-                    @else
-                        <p>No schedule has been posted yet.</p>
-                    @endif
-                </div>
-
-                <div class="form-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px;">
-                        <h4 style="margin:0;">Latest Announcements</h4>
-                        @if(!empty($latestAnnouncement))
-                            <span style="display:inline-flex; align-items:center; padding:6px 10px; border-radius:999px; background:rgba(212,175,55,0.14); color:#f4c542; font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;">New</span>
-                        @endif
-                    </div>
-                    @if(!empty($latestAnnouncement))
-                        <div style="padding: 18px; border-radius: 22px; background: rgba(255,255,255,0.08); border: 1px solid rgba(212,175,55,0.12);">
-                            <strong>{{ $latestAnnouncement['title'] }}</strong>
-                            <p style="margin: 8px 0 0; color: var(--um-gray);">{{ $latestAnnouncement['body'] }}</p>
-                        </div>
-                    @else
-                        <p>No announcements yet.</p>
-                    @endif
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 @endsection

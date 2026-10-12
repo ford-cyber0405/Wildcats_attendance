@@ -135,17 +135,9 @@
 
                 <div class="profile-side-panel">
                     <div class="profile-picture-card" style="padding-top: 36px; padding-bottom: 26px;">
-                        <h3>Profile Picture</h3>
-                        @if(!empty($user['avatar']))
-                            <img src="{{ $user['avatar'] }}" alt="Profile Image" class="avatar avatar-image" style="width: 140px; height: 140px; border-radius: 50%; object-fit: cover;" />
-                        @else
-                            <div class="avatar" style="font-size: 2.4rem; width: 140px; height: 140px; border-radius: 50%; display: grid; place-items: center;">{{ strtoupper(substr($user['first_name'], 0, 1).substr($user['last_name'], 0, 1)) }}</div>
-                        @endif
-                        <label for="avatar" class="button button-secondary" style="width: 100%; margin-top: 8px;">
-                            Change Photo / Choose File
-                        </label>
-                        <input type="file" id="avatar" name="avatar" accept="image/*" class="form-file" style="display:none;" />
-                        <p style="margin: 0; color: var(--um-gray); font-size: 0.95rem; text-align: center;">Use a clear photo for your profile.</p>
+                        <h3>Profile Initials</h3>
+                        <div class="avatar" style="font-size: 2.4rem; width: 140px; height: 140px; border-radius: 50%; display: grid; place-items: center;">{{ strtoupper(substr($user['first_name'], 0, 1).substr($user['last_name'], 0, 1)) }}</div>
+                        <p style="margin: 0; color: var(--um-gray); font-size: 0.95rem; text-align: center;">Your initials identify your account across the portal.</p>
                     </div>
 
                     <div class="profile-meta-card">

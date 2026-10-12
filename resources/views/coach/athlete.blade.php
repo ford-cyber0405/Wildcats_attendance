@@ -18,11 +18,7 @@
 
         <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 24px; align-items: center;">
             <div style="display: flex; gap: 16px; align-items: center;">
-                @if(!empty($student['avatar']))
-                    <img src="{{ $student['avatar'] }}" alt="{{ $student['first_name'] }} {{ $student['last_name'] }}" class="avatar avatar-image" />
-                @else
-                    <div class="avatar">{{ strtoupper(substr($student['first_name'],0,1)) }}{{ strtoupper(substr($student['last_name'],0,1)) }}</div>
-                @endif
+                <div class="avatar">{{ strtoupper(substr($student['first_name'],0,1)) }}{{ strtoupper(substr($student['last_name'],0,1)) }}</div>
                 <div>
                     <h3 style="margin: 0 0 3px;">{{ $student['first_name'] }} {{ $student['middle_name'] ? $student['middle_name'] . ' ' : '' }}{{ $student['last_name'] }}</h3>
                     <p style="margin: 0; color: var(--um-gray);">{{ $student['course'] }} · Year {{ $student['year_level'] }}</p>

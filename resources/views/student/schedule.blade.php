@@ -8,15 +8,6 @@
         <h2 class="page-title">My {{ ucfirst($user['sport']) }} Schedule</h2>
         <p class="hero-copy">Training schedule is shown in calendar style with venue and time inside each date block.</p>
 
-        @if(!empty($unreadSchedule))
-            <x-notification-card
-                title="New Schedule Update"
-                description="Your coach has posted a new schedule update for your team. Acknowledge it to clear the bell notification."
-                actionUrl="/student/notifications/acknowledge/schedule"
-                actionLabel="Acknowledge"
-            />
-        @endif
-
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom: 20px;">
             <div style="display:flex; align-items:center; gap:12px;">
                 <span style="font-weight:600; color: var(--um-gray);">Month:</span>

@@ -12,25 +12,11 @@
             </div>
 
             <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
-                <form id="month-form" method="GET" action="/admin/dashboard" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                <form id="month-form" method="GET" action="/admin/dashboard" class="admin-period-form">
                     <input type="hidden" name="search" value="{{ $search }}" />
-                    <select id="month-select" name="month" class="form-select" style="min-width: 130px; max-width: 140px; padding: 12px 14px; color:#111;background:#fff;">
-                        @foreach(range(1, 12) as $optionMonth)
-                            <option value="{{ $optionMonth }}" {{ $optionMonth === $month ? 'selected' : '' }}>{{ date('F', mktime(0, 0, 0, $optionMonth, 1)) }}</option>
-                        @endforeach
-                    </select>
-                    <select id="year-select" name="year" class="form-select" style="min-width: 110px; max-width: 120px; padding: 12px 14px; color:#111;background:#fff;">
-                        @foreach([$year - 1, $year, $year + 1] as $optionYear)
-                            <option value="{{ $optionYear }}" {{ $optionYear === $year ? 'selected' : '' }}>{{ $optionYear }}</option>
-                        @endforeach
-                    </select>
-                    <button type="submit" class="button button-secondary" style="min-width: 72px; padding: 11px 14px;">Go</button>
+                    <input id="period" type="month" name="period" value="{{ sprintf('%04d-%02d', $year, $month) }}" class="admin-period-input" aria-label="Select attendance month" required />
+                    <button type="submit" class="button button-secondary admin-period-button">Go</button>
                 </form>
-
-                <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
-                    <a href="/admin/dashboard?year={{ $year }}&month={{ max(1, $month - 1) }}" class="button button-secondary" style="padding: 10px 14px;">Prev</a>
-                    <a href="/admin/dashboard?year={{ $year }}&month={{ min(12, $month + 1) }}" class="button button-secondary" style="padding: 10px 14px;">Next</a>
-                </div>
             </div>
         </div>
 
@@ -72,11 +58,7 @@
                         $borderColor = 'rgba(255,255,255,0.06)';
                     @endphp
                     <div class="student-card" style="border-radius: 22px; padding: 16px; background: {{ $cardBg }}; border: 1px solid {{ $borderColor }}; box-shadow: 0 2px 8px rgba(0,0,0,0.12), {{ $glow }}; border-left: 6px solid {{ $colorHex }};">
-                        @if(!empty($student['avatar']))
-                            <img src="{{ $student['avatar'] }}" alt="{{ $student['first_name'] }} {{ $student['last_name'] }}" class="avatar avatar-image" style="width:52px;height:52px;object-fit:cover;border-radius:12px;" />
-                        @else
-                            <div class="avatar" style="width:52px;height:52px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;background:rgba(255,255,255,0.08);color:#fff;">{{ strtoupper(substr($student['first_name'],0,1)) }}{{ strtoupper(substr($student['last_name'],0,1)) }}</div>
-                        @endif
+                        <div class="avatar" style="width:52px;height:52px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;background:rgba(212,175,55,0.18);color:#fff;">{{ strtoupper(substr($student['first_name'],0,1)) }}{{ strtoupper(substr($student['last_name'],0,1)) }}</div>
                         <div class="student-info" style="min-width:0;margin-left:12px;">
                             <h3 style="margin:0 0 6px;font-size:1rem;line-height:1.2;">{{ $student['first_name'] }} {{ $student['last_name'] }}</h3>
                             <p style="margin:0;color:rgba(247,245,242,0.72);font-size:0.88rem;">{{ $student['student_id'] }} · {{ ucfirst($student['sport']) }} · {{ $student['year_level'] }} · {{ $student['course'] }}</p>
@@ -123,11 +105,7 @@
                         $borderColor = 'rgba(255,255,255,0.06)';
                     @endphp
                     <div class="student-card" style="border-radius: 22px; padding: 16px; background: {{ $cardBg }}; border: 1px solid {{ $borderColor }}; box-shadow: 0 2px 8px rgba(0,0,0,0.12), {{ $glow }}; border-left: 6px solid {{ $colorHex }};">
-                        @if(!empty($student['avatar']))
-                            <img src="{{ $student['avatar'] }}" alt="{{ $student['first_name'] }} {{ $student['last_name'] }}" class="avatar avatar-image" style="width:52px;height:52px;object-fit:cover;border-radius:12px;" />
-                        @else
-                            <div class="avatar" style="width:52px;height:52px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;background:rgba(255,255,255,0.08);color:#fff;">{{ strtoupper(substr($student['first_name'],0,1)) }}{{ strtoupper(substr($student['last_name'],0,1)) }}</div>
-                        @endif
+                        <div class="avatar" style="width:52px;height:52px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;background:rgba(212,175,55,0.18);color:#fff;">{{ strtoupper(substr($student['first_name'],0,1)) }}{{ strtoupper(substr($student['last_name'],0,1)) }}</div>
                         <div class="student-info" style="min-width:0;margin-left:12px;">
                             <h3 style="margin:0 0 6px;font-size:1rem;line-height:1.2;">{{ $student['first_name'] }} {{ $student['last_name'] }}</h3>
                             <p style="margin:0;color:rgba(247,245,242,0.72);font-size:0.88rem;">{{ $student['student_id'] }} · {{ ucfirst($student['sport']) }} · {{ $student['year_level'] }} · {{ $student['course'] }}</p>

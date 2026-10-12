@@ -21,7 +21,7 @@
             <div class="field-group password-wrapper" style="position:relative;">
                 <label for="password">Password</label>
                 <input id="password" type="password" name="password" placeholder="Enter your password" required class="form-control" />
-                <button type="button" class="button password-toggle" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                <button type="button" class="button password-toggle" aria-label="Show password" aria-pressed="false" title="Show password"><i class="bi bi-eye" aria-hidden="true"></i></button>
             </div>
             <div class="hero-actions public-login-actions">
                 <button type="submit" class="button button-primary button-large">Login</button>

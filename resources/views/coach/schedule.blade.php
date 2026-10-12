@@ -3,9 +3,23 @@
 @section('title', 'Coach Schedule | UM Attendance')
 
 @section('content')
-@php
-    $venueOptions = ['OVAL', 'FEA GYM', 'FITNES GYM', 'TAEKWONDO ROOM', 'JUDO ROOM', 'BIG GYM(UM MAIN GYM)'];
-@endphp
+<style>
+    .schedule-month-picker {
+        min-width: 240px;
+        color-scheme: dark;
+    }
+
+    .schedule-month-picker:focus {
+        border-color: var(--um-gold);
+        box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+        outline: none;
+    }
+
+    .schedule-month-picker::-webkit-calendar-picker-indicator {
+        filter: invert(78%) sepia(53%) saturate(542%) hue-rotate(3deg) brightness(91%);
+        cursor: pointer;
+    }
+</style>
 <div class="page-panel">
     <div class="large-box">
         <h2 class="page-title">{{ ucfirst($sport) }} Schedule</h2>
@@ -15,11 +29,7 @@
             <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
                 <span style="font-weight:600; color: var(--um-gray);">Month:</span>
                 <form method="GET" action="/coach/schedule/{{ $sport }}" style="margin:0; display:flex; gap:12px; align-items:center;">
-                    <select name="month" id="month" onchange="this.form.submit()" class="form-control form-select" style="min-width: 240px;">
-                        @foreach($availableMonths as $monthValue => $monthLabel)
-                            <option value="{{ $monthValue }}" {{ $monthValue === $monthKey ? 'selected' : '' }}>{{ $monthLabel }}</option>
-                        @endforeach
-                    </select>
+                    <input type="month" name="month" id="month" value="{{ $monthKey }}" onchange="this.form.submit()" class="form-control schedule-month-picker" aria-label="Select schedule month" />
                 </form>
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -38,42 +48,6 @@
             </div>
         @endif
 
-        <form method="POST" action="/coach/schedule/{{ $sport }}" class="form-panel" style="margin-top: 24px;">
-            @csrf
-            <input type="hidden" name="month" value="{{ $monthKey }}" />
-            <div class="field-row">
-                <div class="field-group">
-                    <label for="date">Date</label>
-                    <input id="date" type="date" name="date" required class="form-control" />
-                </div>
-                <div class="field-group">
-                    <label for="session_type">Session Type</label>
-                    <select id="session_type" name="session_type" required class="form-control form-select">
-                        <option value="training">Training</option>
-                        <option value="no_training">No Training</option>
-                    </select>
-                </div>
-            </div>
-            <div class="field-row">
-                <div class="field-group">
-                    <label for="time">Time</label>
-                    <input id="time" type="text" name="time" placeholder="8:00 AM - 10:00 AM" class="form-control" />
-                </div>
-                <div class="field-group">
-                    <label for="venue">Venue</label>
-                    <select id="venue" name="venue" class="form-control form-select">
-                        <option value="" disabled selected>Select a venue</option>
-                        @foreach($venueOptions as $venueOption)
-                            <option value="{{ $venueOption }}">{{ $venueOption }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-            <div class="action-row" style="margin-top:12px; display:flex; gap:12px; justify-content:flex-end;">
-                <button class="button button-primary" type="submit">Save Schedule</button>
-            </div>
-        </form>
-
         @php
             $selectedMonth = \DateTime::createFromFormat('!Y-m', $monthKey) ?: new \DateTime();
             $firstOfMonth = strtotime($selectedMonth->format('Y-m-01'));
@@ -88,76 +62,83 @@
                     $dayName = date('D', strtotime($date));
                     $isSunday = $dayName === 'Sun';
                 @endphp
-                <div class="calendar-cell month-cell {{ $item ? 'has-schedule' : ($isSunday ? 'rest-day' : 'empty-day') }}">
-                    <div>
+                <details class="calendar-cell month-cell {{ $item ? 'has-schedule' : ($isSunday ? 'rest-day' : 'empty-day') }}" data-schedule-card>
+                    <summary style="cursor: pointer; list-style: none;">
                         <h4>{{ $day }} <span style="color: var(--um-gray); font-size: 0.95rem;">{{ $dayName }}</span></h4>
                         <p>{{ date('M j, Y', strtotime($date)) }}</p>
-                    </div>
-                    <div style="margin-top: 12px; display:grid; gap:8px;">
-                        @if($item && isset($item['time']) && $item['time'] === 'No Training')
-                            <span class="status-chip info">No Training</span>
-                        @elseif($item)
-                            <span class="status-chip info">Venue: {{ $item['venue'] ?? 'TBA' }}</span>
-                            <span class="status-chip info">Time: {{ App\Services\AttendanceStore::formatDisplayTime($item['time'] ?? null) }}</span>
+                        <div style="margin-top: 12px; display:grid; gap:8px;">
+                        @if($item)
+                            <span class="status-chip info">{{ ucfirst(str_replace('_', ' ', $item['status'])) }}</span>
+                            <span class="status-chip info">{{ $item['start_time'] }} - {{ $item['end_time'] }}</span>
+                            <span class="status-chip info">Location: {{ $item['location'] ?? 'TBA' }}</span>
                         @elseif($isSunday)
                             <span class="status-chip info">No Training</span>
                         @else
                             <span class="status-chip info">No schedule</span>
                         @endif
-                    </div>
-                    <div class="schedule-actions action-row" style="margin-top: 14px; display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap;">
-                        @if($item)
-                            <details style="min-width: 150px;">
-                                <summary class="button button-present" style="cursor: pointer;">Edit</summary>
-                                <form method="POST" action="/coach/schedule/{{ $sport }}/{{ $date }}/update" class="form-panel" style="margin-top: 12px;">
-                                    @csrf
-                                    <input type="hidden" name="month" value="{{ $monthKey }}" />
-                                    @php
-                                        $currentType = ($item['time'] ?? '') === 'No Training' ? 'no_training' : 'training';
-                                    @endphp
-                                    <div class="field-row">
-                                        <div class="field-group">
-                                            <label for="date_{{ $date }}">Date</label>
-                                            <input id="date_{{ $date }}" type="date" name="date" value="{{ $date }}" required class="form-control" />
-                                        </div>
-                                        <div class="field-group">
-                                            <label for="session_type_{{ $date }}">Session Type</label>
-                                            <select id="session_type_{{ $date }}" name="session_type" required class="form-control form-select">
-                                                <option value="training" {{ $currentType === 'training' ? 'selected' : '' }}>Training</option>
-                                                <option value="no_training" {{ $currentType === 'no_training' ? 'selected' : '' }}>No Training</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="field-row">
-                                        <div class="field-group">
-                                            <label for="time_{{ $date }}">Time</label>
-                                            <input id="time_{{ $date }}" type="text" name="time" value="{{ $currentType === 'training' ? $item['time'] : '' }}" class="form-control" />
-                                        </div>
-                                        <div class="field-group">
-                                            <label for="venue_{{ $date }}">Venue</label>
-                                            <select id="venue_{{ $date }}" name="venue" class="form-control form-select">
-                                                <option value="" disabled>Select a venue</option>
-                                                @foreach($venueOptions as $venueOption)
-                                                    <option value="{{ $venueOption }}" {{ ($item['venue'] ?? '') === $venueOption ? 'selected' : '' }}>{{ $venueOption }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="action-row" style="margin-top:8px; display:flex; gap:8px; justify-content:flex-end;">
-                                        <button type="submit" class="button button-primary">Save</button>
-                                    </div>
-                                </form>
-                            </details>
-
-                            <form method="POST" action="/coach/schedule/{{ $sport }}/{{ $date }}/delete" style="margin: 0;">
-                                @csrf
-                                <button type="submit" class="button button-danger">Delete</button>
-                            </form>
-                        @endif
-                    </div>
-                </div>
+                        </div>
+                    </summary>
+                    <form method="POST" action="{{ $item ? "/coach/schedule/{$sport}/{$date}/update" : "/coach/schedule/{$sport}" }}" class="form-panel" style="margin-top: 12px;" data-schedule-form>
+                        @csrf
+                        <input type="hidden" name="month" value="{{ $monthKey }}" />
+                        <input type="hidden" name="training_date" value="{{ $date }}" />
+                        <div class="field-group">
+                            <label for="status_{{ $date }}">Status</label>
+                            <select id="status_{{ $date }}" name="status" required class="form-control form-select">
+                                <option value="training" {{ ($item['status'] ?? 'training') === 'training' ? 'selected' : '' }}>Training</option>
+                                <option value="no_training" {{ ($item['status'] ?? '') === 'no_training' ? 'selected' : '' }}>No Training</option>
+                            </select>
+                        </div>
+                        <div class="field-row">
+                            <div class="field-group">
+                                <label for="start_time_{{ $date }}">Start time</label>
+                                <input id="start_time_{{ $date }}" type="time" name="start_time" value="{{ $item['start_time'] ?? '09:00' }}" required class="form-control" />
+                            </div>
+                            <div class="field-group">
+                                <label for="end_time_{{ $date }}">End time</label>
+                                <input id="end_time_{{ $date }}" type="time" name="end_time" value="{{ $item['end_time'] ?? '10:00' }}" required class="form-control" />
+                            </div>
+                        </div>
+                       <div class="field-group">
+    <label for="location_{{ $date }}">Location</label>
+    <select id="location_{{ $date }}" name="location" class="form-control">
+        <option value="" disabled {{ empty($item['location'] ?? '') ? 'selected' : '' }}>Select location</option>
+        @foreach (['TKD Room', 'Judo Room', 'FEA Gym', 'Fitness Gym', 'Big Gym', 'Oval'] as $location)
+            <option value="{{ $location }}" {{ ($item['location'] ?? '') === $location ? 'selected' : '' }}>
+                {{ $location }}
+            </option>
+        @endforeach
+    </select>
+</div>
+<div class="action-row" style="margin-top:8px; display:flex; gap:8px; justify-content:flex-end;">
+    <button type="button" class="button button-secondary" data-cancel-schedule>Cancel</button>
+    <button type="submit" class="button button-primary">Save</button>
+</div>
+                    </form>
+                    @if($item)
+                        <form method="POST" action="/coach/schedule/{{ $sport }}/{{ $date }}/delete" style="margin-top: 8px;" data-delete-schedule>
+                            @csrf
+                            <button type="submit" class="button button-danger">Delete</button>
+                        </form>
+                    @endif
+                </details>
             @endfor
             </div>
+
+            <script>
+                document.querySelectorAll('[data-schedule-card]').forEach((card) => {
+                    card.addEventListener('toggle', () => {
+                        if (card.open) {
+                            document.querySelectorAll('[data-schedule-card][open]').forEach((otherCard) => {
+                                if (otherCard !== card) otherCard.open = false;
+                            });
+                        }
+                    });
+                    card.querySelector('[data-cancel-schedule]').addEventListener('click', () => {
+                        card.open = false;
+                    });
+                });
+            </script>
 
             <form method="POST" action="/coach/schedule/{{ $sport }}/publish" style="margin-top: 20px; display:flex; gap: 12px; flex-wrap:wrap; align-items:center;">
                 @csrf

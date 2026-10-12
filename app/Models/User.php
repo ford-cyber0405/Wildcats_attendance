@@ -19,8 +19,9 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'role',
         'email',
+        'student_id_number',
         'password',
     ];
 
@@ -42,8 +43,47 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function student()
+    {
+        return $this->hasOne(Student::class);
+    }
+
+    public function coach()
+    {
+        return $this->hasOne(Coach::class);
+    }
+
+    public function superAdmin()
+    {
+        return $this->hasOne(SuperAdmin::class);
+    }
+
+    public function correctedAttendances()
+    {
+        return $this->hasMany(Attendance::class, 'corrected_by');
+    }
+
+    public function reviewedExcuseRequests()
+    {
+        return $this->hasMany(ExcuseRequest::class, 'reviewed_by');
+    }
+
+    public function reviewedSpecialTrainingRequests()
+    {
+        return $this->hasMany(SpecialTrainingRequest::class, 'reviewed_by');
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function systemRecords()
+    {
+        return $this->hasMany(SystemRecord::class);
     }
 }

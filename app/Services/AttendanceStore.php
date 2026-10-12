@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -588,7 +590,34 @@ class AttendanceStore
 
     public static function currentUser(): ?array
     {
-        return session('user');
+        $legacyUser = session('user');
+        if (is_array($legacyUser)) {
+            return $legacyUser;
+        }
+
+        $user = Auth::user();
+        if (!$user instanceof User) {
+            return null;
+        }
+
+        $profile = $user->student ?: $user->coach ?: $user->superAdmin;
+        $sport = $profile?->sport;
+
+        return [
+            'id' => (string) $user->id,
+            'student_id' => $user->student_id_number,
+            'email' => $user->email,
+            'password' => $user->password,
+            'role' => $user->role === 'super_admin' ? 'admin' : $user->role,
+            'first_name' => $profile?->first_name,
+            'middle_name' => $profile?->middle_initial ?? '',
+            'last_name' => $profile?->last_name,
+            'year_level' => $profile?->year_level,
+            'course' => $profile?->course,
+            'contact' => null,
+            'sport' => $sport ? strtolower($sport->name) : 'none',
+            'avatar' => null,
+        ];
     }
 
     public static function setUserAvatar(string $userId, ?string $path): void
@@ -1449,32 +1478,30 @@ class AttendanceStore
 
     public static function getPendingExcuseCount(?string $sport = null): int
     {
-        $data = self::all();
-        $count = 0;
-        foreach ($data['excuses'] as $excuse) {
-            if ($excuse['approved']) {
-                continue;
-            }
-            if ($sport === null || $sport === 'all' || $excuse['sport'] === $sport) {
-                $count++;
+        $query = \App\Models\ExcuseRequest::query()->where('status', 'pending');
+
+        if ($sport !== null && $sport !== 'all') {
+            $sportId = \App\Models\Sport::whereRaw('LOWER(name) = ?', [strtolower($sport)])->value('id');
+            if ($sportId !== null) {
+                $query->whereHas('student', fn ($studentQuery) => $studentQuery->where('sport_id', $sportId));
             }
         }
-        return $count;
+
+        return (int) $query->count();
     }
 
     public static function getPendingSpecialTrainingRequestCount(?string $sport = null): int
     {
-        $data = self::all();
-        $count = 0;
-        foreach ($data['special_training_requests'] ?? [] as $request) {
-            if (!empty($request['approved'])) {
-                continue;
-            }
-            if ($sport === null || $sport === 'all' || ($request['sport'] ?? null) === $sport) {
-                $count++;
+        $query = \App\Models\SpecialTrainingRequest::query()->where('status', 'pending');
+
+        if ($sport !== null && $sport !== 'all') {
+            $sportId = \App\Models\Sport::whereRaw('LOWER(name) = ?', [strtolower($sport)])->value('id');
+            if ($sportId !== null) {
+                $query->whereHas('student', fn ($studentQuery) => $studentQuery->where('sport_id', $sportId));
             }
         }
-        return $count;
+
+        return (int) $query->count();
     }
 
     public static function addAnnouncement(string $sport, string $title, string $body): void

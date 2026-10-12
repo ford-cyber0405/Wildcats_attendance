@@ -1,5 +1,13 @@
 @php
     $user = session('user') ?? [];
+    if (!$user && auth()->check()) {
+        $authenticatedUser = auth()->user();
+        $profile = $authenticatedUser->student ?: $authenticatedUser->coach ?: $authenticatedUser->superAdmin;
+        $user = [
+            'role' => $authenticatedUser->role === 'super_admin' ? 'admin' : $authenticatedUser->role,
+            'sport' => $profile?->sport ? strtolower($profile->sport->name) : null,
+        ];
+    }
     $currentPath = trim(request()->path(), '/');
     $navItems = [];
 
@@ -8,9 +16,9 @@
             ['label' => 'Dashboard', 'href' => '/student/dashboard', 'icon' => 'bi-speedometer2'],
             ['label' => 'Team Status', 'href' => '/student/roster', 'icon' => 'bi-people-fill'],
             ['label' => 'Schedule', 'href' => '/student/schedule', 'icon' => 'bi-calendar-event'],
-            ['label' => 'Announcements', 'href' => '/student/announcements', 'icon' => 'bi-chat-square-text'],
             ['label' => 'Excuse Requests', 'href' => '/student/excuse', 'icon' => 'bi-file-earmark-text'],
             ['label' => 'Special Training', 'href' => '/student/special-training', 'icon' => 'bi-stars'],
+            ['label' => 'Notifications', 'href' => '/notifications', 'icon' => 'bi-bell'],
             ['label' => 'Logout', 'href' => '/logout', 'icon' => 'bi-box-arrow-right'],
         ];
     } elseif (($user['role'] ?? null) === 'coach') {
@@ -30,6 +38,7 @@
             ['label' => 'Excuse Requests', 'href' => '/coach/excuses', 'icon' => 'bi-file-earmark-text'],
             ['label' => 'Special Training', 'href' => '/coach/special-training', 'icon' => 'bi-stars'],
             ['label' => 'Announcements', 'href' => '/coach/announcements', 'icon' => 'bi-chat-square-text'],
+            ['label' => 'Notifications', 'href' => '/notifications', 'icon' => 'bi-bell'],
             ['label' => 'Logout', 'href' => '/logout', 'icon' => 'bi-box-arrow-right'],
         ]);
     } elseif (($user['role'] ?? null) === 'admin') {
@@ -39,6 +48,7 @@
             ['label' => 'Excuse Requests', 'href' => '/admin/excuses', 'icon' => 'bi-file-earmark-text'],
             ['label' => 'Special Training', 'href' => '/admin/special-training', 'icon' => 'bi-stars'],
             ['label' => 'System Settings', 'href' => '/admin/system-settings', 'icon' => 'bi-gear'],
+            ['label' => 'Notifications', 'href' => '/notifications', 'icon' => 'bi-bell'],
             ['label' => 'Logout', 'href' => '/logout', 'icon' => 'bi-box-arrow-right'],
         ];
     }

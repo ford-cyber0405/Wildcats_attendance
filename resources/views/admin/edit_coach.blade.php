@@ -8,14 +8,10 @@
         <h2 class="page-title">Edit Coach Account</h2>
         <p class="hero-copy">Update coach details below.</p>
 
-        <form method="POST" action="/admin/coach/{{ $coach['id'] }}/update" class="form-panel" enctype="multipart/form-data">
+        <form method="POST" action="/admin/coach/{{ $coach['id'] }}/update" class="form-panel">
             @csrf
             <div class="coach-edit-header">
-                @if(!empty($coach['avatar']))
-                    <img src="{{ $coach['avatar'] }}" alt="avatar" class="coach-avatar" />
-                @else
-                    <div class="coach-initials">{{ strtoupper(substr($coach['first_name'] ?? '', 0, 1) . substr($coach['last_name'] ?? '', 0, 1)) }}</div>
-                @endif
+                <div class="coach-initials">{{ strtoupper(substr($coach['first_name'] ?? '', 0, 1) . substr($coach['last_name'] ?? '', 0, 1)) }}</div>
                 <div class="meta">
                     <strong>{{ $coach['first_name'] }} {{ $coach['last_name'] }}</strong>
                     <div class="coach-edit-email">{{ $coach['email'] }}</div>
@@ -81,14 +77,7 @@
                         <button type="button" class="button password-toggle" aria-label="Show password"><i class="bi bi-eye"></i></button>
                     </div>
                 </div>
-                <div class="field-group">
-                    <label for="avatar">Profile Photo (optional)</label>
-                    <div class="file-input">
-                        <input id="avatar" name="avatar" type="file" accept="image/*" class="form-file visually-hidden" />
-                        <button type="button" class="button file-choose">Choose File</button>
-                        <span class="file-name">No file chosen</span>
-                    </div>
-                </div>
+                <div class="field-group"></div>
             </div>
 
            

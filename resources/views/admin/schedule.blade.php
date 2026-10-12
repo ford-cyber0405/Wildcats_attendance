@@ -3,13 +3,10 @@
 @section('title', 'Admin Schedule | UM Attendance')
 
 @section('content')
-@php
-    $venueOptions = ['Oval', 'FEA GYM', 'FITNES GYM', 'TAEKWONDO ROOM', 'JUDO ROOM', 'BIG GYM(UM MAIN GYM)'];
-@endphp
 <div class="page-panel">
     <div class="large-box">
         <h2 class="page-title">{{ ucfirst($sport) }} Schedule Management</h2>
-        <p class="hero-copy">Create or update training schedule entries for {{ ucfirst($sport) }}.</p>
+        <p class="hero-copy">View training schedule entries for {{ ucfirst($sport) }}.</p>
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-top: 24px;">
             <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
                 <span style="font-weight:600; color: var(--um-gray);">Month:</span>
@@ -26,32 +23,6 @@
                 <a href="/admin/schedule/{{ $sport }}?month={{ $nextMonth }}" class="button button-secondary">Next &raquo;</a>
             </div>
         </div>
-
-        <form method="POST" action="/admin/schedule/{{ $sport }}" class="form-panel" style="margin-top: 18px;">
-            @csrf
-            <div class="field-row">
-                <div class="field-group">
-                    <label for="date">Date</label>
-                    <input id="date" name="date" type="date" required class="form-control" />
-                </div>
-                <div class="field-group">
-                    <label for="time">Time</label>
-                    <input id="time" name="time" type="text" placeholder="8:00 AM - 10:00 AM" required class="form-control" />
-                </div>
-            </div>
-            <div class="field-group">
-                <label for="venue">Venue</label>
-                <select id="venue" name="venue" required class="form-control form-select">
-                    <option value="" disabled selected>Select a venue</option>
-                    @foreach($venueOptions as $venueOption)
-                        <option value="{{ $venueOption }}">{{ $venueOption }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="action-row" style="margin-top:12px; display:flex; gap:12px; justify-content:flex-end;">
-                <button type="submit" class="button button-primary">Save Schedule</button>
-            </div>
-        </form>
 
         @php
             $selectedMonth = \DateTime::createFromFormat('!Y-m', $monthKey) ?: new \DateTime();
@@ -73,52 +44,14 @@
                         <p>{{ date('M j, Y', strtotime($date)) }}</p>
                     </div>
                     <div style="margin-top: 12px; display:grid; gap:8px;">
-                        @if($item && isset($item['time']) && $item['time'] === 'No Training')
-                            <span class="status-chip info">No Training</span>
-                        @elseif($item)
-                            <span class="status-chip info">Venue: {{ $item['venue'] ?? 'TBA' }}</span>
-                            <span class="status-chip info">Time: {{ App\Services\AttendanceStore::formatDisplayTime($item['time'] ?? null) }}</span>
+                        @if($item)
+                            <span class="status-chip info">{{ ucfirst(str_replace('_', ' ', $item['status'])) }}</span>
+                            <span class="status-chip info">{{ $item['start_time'] }} - {{ $item['end_time'] }}</span>
+                            <span class="status-chip info">Location: {{ $item['location'] ?? 'TBA' }}</span>
                         @elseif($isSunday)
                             <span class="status-chip info">No Training</span>
                         @else
                             <span class="status-chip info">No schedule</span>
-                        @endif
-                    </div>
-                    <div class="schedule-actions action-row" style="margin-top: 14px; display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap;">
-                        @if($item)
-                            <details style="min-width: 150px;">
-                                <summary class="button button-present" style="cursor: pointer;">Edit</summary>
-                                <form method="POST" action="/admin/schedule/{{ $sport }}/{{ $date }}/update" class="form-panel" style="margin-top: 12px;">
-                                    @csrf
-                                    <div class="field-row">
-                                        <div class="field-group">
-                                            <label for="date_{{ $date }}">Date</label>
-                                            <input id="date_{{ $date }}" type="date" name="date" value="{{ $date }}" required class="form-control" />
-                                        </div>
-                                        <div class="field-group">
-                                            <label for="time_{{ $date }}">Time</label>
-                                            <input id="time_{{ $date }}" type="text" name="time" value="{{ $item['time'] ?? '' }}" required class="form-control" />
-                                        </div>
-                                    </div>
-                                    <div class="field-group">
-                                        <label for="venue_{{ $date }}">Venue</label>
-                                        <select id="venue_{{ $date }}" name="venue" required class="form-control form-select">
-                                            <option value="" disabled>Select a venue</option>
-                                            @foreach($venueOptions as $venueOption)
-                                                <option value="{{ $venueOption }}" {{ ($item['venue'] ?? '') === $venueOption ? 'selected' : '' }}>{{ $venueOption }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="action-row" style="margin-top:8px; display:flex; gap:8px; justify-content:flex-end;">
-                                        <button type="submit" class="button button-primary">Save</button>
-                                    </div>
-                                </form>
-                            </details>
-
-                            <form method="POST" action="/admin/schedule/{{ $sport }}/{{ $date }}/delete" style="margin: 0;">
-                                @csrf
-                                <button type="submit" class="button button-danger">Delete</button>
-                            </form>
                         @endif
                     </div>
                 </div>

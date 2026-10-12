@@ -2,7 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ExcuseRequest;
+use App\Models\SpecialTrainingRequest;
+use App\Models\TrainingSchedule;
+use Illuminate\Support\Facades\Auth;
 use App\Services\AttendanceStore;
+use App\Services\NotificationService;
+use App\Services\AttendancePerformance;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 
@@ -10,14 +16,14 @@ class CoachController extends Controller
 {
     protected function authorizeCoach()
     {
-        $user = AttendanceStore::currentUser();
-        if (!$user || $user['role'] !== 'coach') {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'coach') {
             return null;
         }
-        return $user;
+        return AttendanceStore::currentUser();
     }
 
-    public function dashboard(Request $request)
+    public function dashboard(Request $request, AttendancePerformance $performance)
     {
         $user = $this->authorizeCoach();
         if (!$user) {
@@ -26,7 +32,7 @@ class CoachController extends Controller
 
         $year = (int) $request->query('year', now()->year);
         $month = (int) $request->query('month', now()->month);
-        $students = AttendanceStore::allStudentsStatus($user['sport'], $year, $month);
+        $students = $performance->students(Auth::user()->coach->sport_id, $year, $month)->all();
         $search = $request->query('search', '');
         if ($search) {
             $students = array_filter($students, function ($student) use ($search) {
@@ -62,16 +68,19 @@ class CoachController extends Controller
             $monthKey = $selectedMonth->format('Y-m');
         }
 
-        $schedules = AttendanceStore::getSchedules($sport, $monthKey);
-        $schedulePublishedAt = AttendanceStore::getScheduleUpdateTime($sport);
-        $pendingPublish = AttendanceStore::hasPendingScheduleChanges($sport);
-
-        $availableMonths = [];
-        $monthAnchor = (clone $selectedMonth)->modify('-1 month');
-        for ($i = 0; $i < 12; $i++) {
-            $availableMonths[$monthAnchor->format('Y-m')] = $monthAnchor->format('F Y');
-            $monthAnchor = $monthAnchor->modify('+1 month');
-        }
+        $sportModel = Auth::user()->coach->sport;
+        $schedules = TrainingSchedule::where('sport_id', $sportModel->id)
+            ->whereBetween('training_date', ["{$monthKey}-01", "{$monthKey}-".date('t', strtotime("{$monthKey}-01"))])
+            ->orderBy('training_date')
+            ->get()
+            ->keyBy(fn ($schedule) => $schedule->training_date->format('Y-m-d'))
+            ->map(fn ($schedule) => [
+                'id' => $schedule->id,
+                'start_time' => $schedule->start_time->format('H:i'),
+                'end_time' => $schedule->end_time->format('H:i'),
+                'location' => $schedule->location,
+                'status' => $schedule->status,
+            ])->all();
 
         $prevMonth = (clone $selectedMonth)->modify('-1 month')->format('Y-m');
         $nextMonth = (clone $selectedMonth)->modify('+1 month')->format('Y-m');
@@ -82,85 +91,74 @@ class CoachController extends Controller
             'schedules' => $schedules,
             'monthKey' => $monthKey,
             'monthLabel' => $selectedMonth->format('F Y'),
-            'availableMonths' => $availableMonths,
             'prevMonth' => $prevMonth,
             'nextMonth' => $nextMonth,
-            'schedulePublishedAt' => $schedulePublishedAt,
-            'pendingPublish' => $pendingPublish,
+            'schedulePublishedAt' => null,
+            'pendingPublish' => false,
         ]);
     }
 
-    public function storeSchedule(Request $request, string $sport)
+    public function storeSchedule(Request $request, string $sport, NotificationService $notificationService)
     {
         $user = $this->authorizeCoach();
         if (!$user || ($user['sport'] !== $sport && $user['sport'] !== 'all')) {
             return redirect('/coach/dashboard');
         }
 
-        $request->validate([
-            'date' => 'required|date',
-            'session_type' => 'required|in:training,no_training',
-            'venue' => 'required_if:session_type,training|string|max:120',
-            'time' => 'required_if:session_type,training|string|max:30',
+        $validated = $request->validate([
+            'training_date' => 'required|date_format:Y-m-d',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+            'location' => 'nullable|string|max:191',
+            'status' => 'required|in:training,no_training',
             'month' => 'nullable|string',
         ]);
 
-        $sessionType = $request->input('session_type');
-        if ($sessionType === 'no_training') {
-            $time = 'No Training';
-            $venue = 'Rest Day';
-        } else {
-            $time = $request->input('time');
-            $venue = $request->input('venue');
-        }
-
-        // Prevent double-booking: check for existing schedule on the same date/venue for another sport
-        if ($sessionType === 'training') {
-            $conflict = AttendanceStore::findScheduleConflict($sport, $request->input('date'), $time, $venue);
-            if ($conflict) {
-                return back()->withErrors(['date' => "Schedule conflict: {$conflict['sport']} already has a booking at {$venue} on {$request->input('date')}."])->withInput();
-            }
-        }
-
-        AttendanceStore::setSchedule($sport, $request->input('date'), $time, $venue);
+        $sportModel = Auth::user()->coach->sport;
+        $schedule = TrainingSchedule::create([
+            'sport_id' => $sportModel->id,
+            'coach_id' => Auth::user()->coach->id,
+            'training_date' => date('Y-m-d', strtotime($validated['training_date'])),
+            'start_time' => $validated['start_time'],
+            'end_time' => $validated['end_time'],
+            'location' => $validated['location'] ?? null,
+            'status' => $validated['status'],
+        ]);
+        $notificationService->notifySchedule($schedule->fresh());
         $monthKey = $request->input('month', now()->format('Y-m'));
 
         return redirect("/coach/schedule/{$sport}?month={$monthKey}")->with('success', 'Training schedule updated.');
     }
 
-    public function updateSchedule(Request $request, string $sport, string $date)
+    public function updateSchedule(Request $request, string $sport, string $date, NotificationService $notificationService)
     {
         $user = $this->authorizeCoach();
         if (!$user || ($user['sport'] !== $sport && $user['sport'] !== 'all')) {
             return redirect('/coach/dashboard');
         }
 
-        $request->validate([
-            'date' => 'required|date',
-            'session_type' => 'required|in:training,no_training',
-            'venue' => 'required_if:session_type,training|string|max:120',
-            'time' => 'required_if:session_type,training|string|max:30',
+        $validated = $request->validate([
+            'training_date' => 'required|date_format:Y-m-d',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+            'location' => 'nullable|string|max:191',
+            'status' => 'required|in:training,no_training',
             'month' => 'nullable|string',
         ]);
 
-        $sessionType = $request->input('session_type');
-        if ($sessionType === 'no_training') {
-            $time = 'No Training';
-            $venue = 'Rest Day';
-        } else {
-            $time = $request->input('time');
-            $venue = $request->input('venue');
-        }
-
-        // Prevent double-booking when updating: check for conflicts on the new date/venue
-        if ($sessionType === 'training') {
-            $conflict = AttendanceStore::findScheduleConflict($sport, $request->input('date'), $request->input('time'), $request->input('venue'));
-            if ($conflict) {
-                return back()->withErrors(['date' => "Schedule conflict: {$conflict['sport']} already has a booking at {$request->input('venue')} on {$request->input('date')}."])->withInput();
-            }
-        }
-
-        AttendanceStore::updateSchedule($sport, $date, $request->input('date'), $time, $venue);
+        $date = date('Y-m-d', strtotime($date));
+        $schedule = TrainingSchedule::whereDate('training_date', $date)
+            ->where('coach_id', Auth::user()->coach->id)
+            ->where('sport_id', Auth::user()->coach->sport_id)
+            ->firstOrFail();
+        $schedule->update([
+            'training_date' => date('Y-m-d', strtotime($validated['training_date'])),
+            'start_time' => $validated['start_time'],
+            'end_time' => $validated['end_time'],
+            'location' => $validated['location'] ?? null,
+            'status' => $validated['status'],
+        ]);
+        $notificationService->notifySchedule($schedule->fresh());
         $monthKey = $request->input('month', now()->format('Y-m'));
 
         return redirect("/coach/schedule/{$sport}?month={$monthKey}")->with('success', 'Schedule entry updated.');
@@ -187,7 +185,11 @@ class CoachController extends Controller
             return redirect('/coach/dashboard');
         }
 
-        AttendanceStore::deleteSchedule($sport, $date);
+        TrainingSchedule::where('training_date', $date)
+            ->where('coach_id', Auth::user()->coach->id)
+            ->where('sport_id', Auth::user()->coach->sport_id)
+            ->firstOrFail()
+            ->delete();
         return back()->with('success', 'Schedule entry deleted.');
     }
 
@@ -233,7 +235,7 @@ class CoachController extends Controller
         return back()->with('success', 'Announcement deleted successfully.');
     }
 
-    public function createAnnouncement(Request $request)
+    public function createAnnouncement(Request $request, NotificationService $notificationService)
     {
         $user = $this->authorizeCoach();
         if (!$user) {
@@ -246,6 +248,8 @@ class CoachController extends Controller
         ]);
 
         AttendanceStore::addAnnouncement($user['sport'], $request->input('title'), $request->input('body'));
+        $sportId = Auth::user()->coach->sport_id;
+        $notificationService->notifyAnnouncementForSport($sportId, $request->input('title'), $request->input('body'));
         return back()->with('success', 'Announcement posted to your team.');
     }
 
@@ -256,7 +260,22 @@ class CoachController extends Controller
             return redirect('/login');
         }
 
-        $excuses = AttendanceStore::getExcuses($user['sport']);
+        $excuses = ExcuseRequest::with(['student.user', 'trainingSchedule', 'photos'])
+            ->whereHas('student', fn ($query) => $query->where('sport_id', Auth::user()->coach->sport_id))
+            ->where('status', 'pending')
+            ->latest()
+            ->get();
+        $excuses = $excuses->map(fn ($excuse) => [
+            'id' => $excuse->id,
+            'title' => 'Excuse Request',
+            'student_id' => $excuse->student->user->student_id_number,
+            'student_display' => trim($excuse->student->first_name.' '.$excuse->student->last_name).' · '.$excuse->student->user->student_id_number,
+            'date' => $excuse->trainingSchedule->training_date->toDateString(),
+            'sport' => strtolower($excuse->trainingSchedule->sport->name ?? ''),
+            'reason' => $excuse->reason,
+            'status' => $excuse->status,
+            'attachments' => $excuse->photos->pluck('photo_path')->all(),
+        ])->all();
         return view('coach.excuses', [
             'user' => $user,
             'excuses' => $excuses,
@@ -270,19 +289,21 @@ class CoachController extends Controller
             return redirect('/login');
         }
 
-        $excuse = AttendanceStore::findExcuseById($id);
-        if (!$excuse || ($user['sport'] !== 'all' && ($excuse['sport'] ?? null) !== $user['sport'])) {
+        $excuse = ExcuseRequest::with(['student.user', 'student.sport', 'trainingSchedule', 'photos'])
+            ->whereKey($id)
+            ->whereHas('student', fn ($query) => $query->where('sport_id', Auth::user()->coach->sport_id))
+            ->first();
+        if (!$excuse) {
             return redirect('/coach/excuses')->withErrors(['excuse' => 'Excuse request not found.']);
         }
-
-        $student = AttendanceStore::findUserByStudentId($excuse['student_id']);
-        $excuse['student_display'] = $student
-            ? trim($student['first_name'] . ' ' . $student['last_name']) . ' · ' . $excuse['student_id']
-            : 'Student ID: ' . $excuse['student_id'];
-
-        $excuse['submitted_at_label'] = !empty($excuse['submitted_at'])
-            ? date('M j, Y', strtotime($excuse['submitted_at']))
-            : null;
+        $excuse = array_merge($excuse->toArray(), [
+            'title' => 'Excuse Request',
+            'student_id' => $excuse->student->user->student_id_number,
+            'student_display' => trim($excuse->student->first_name.' '.$excuse->student->last_name).' · '.$excuse->student->user->student_id_number,
+            'date' => $excuse->trainingSchedule->training_date->toDateString(),
+            'sport' => strtolower($excuse->student->sport->name),
+            'attachments' => $excuse->photos->pluck('photo_path')->all(),
+        ]);
 
         return view('coach.excuse_detail', [
             'user' => $user,
@@ -297,26 +318,21 @@ class CoachController extends Controller
             return redirect('/login');
         }
 
-        $requests = AttendanceStore::getPendingSpecialTrainingRequests($user['sport']);
-        $requests = array_map(function ($request) {
-            $student = AttendanceStore::findUserByStudentId($request['student_id']);
-            $request['student_display'] = $student
-                ? trim($student['first_name'] . ' ' . $student['last_name']) . ' · ' . $request['student_id']
-                : 'Student ID: ' . $request['student_id'];
-
-            $start = strtotime($request['start_date']);
-            $end = strtotime($request['end_date']);
-            $request['date_range'] = date('M j, Y', $start);
-            if ($request['start_date'] !== $request['end_date']) {
-                $request['date_range'] .= ' – ' . date('M j, Y', $end);
-            }
-
-            $request['submitted_at_label'] = !empty($request['submitted_at'])
-                ? date('M j, Y', strtotime($request['submitted_at']))
-                : null;
-
-            return $request;
-        }, $requests);
+        $requests = SpecialTrainingRequest::with('student.user')
+            ->whereHas('student', fn ($query) => $query->where('sport_id', Auth::user()->coach->sport_id))
+            ->where('status', 'pending')
+            ->latest()
+            ->get();
+        $requests = $requests->map(fn ($request) => [
+            'id' => $request->id,
+            'title' => 'Special Training Request',
+            'student_id' => $request->student->user->student_id_number,
+            'student_display' => trim($request->student->first_name.' '.$request->student->last_name).' · '.$request->student->user->student_id_number,
+            'start_date' => $request->start_date->toDateString(),
+            'end_date' => $request->end_date->toDateString(),
+            'reason' => $request->reason,
+            'status' => $request->status,
+        ])->all();
 
         return view('coach.special_training', [
             'user' => $user,
@@ -331,26 +347,20 @@ class CoachController extends Controller
             return redirect('/login');
         }
 
-        $request = AttendanceStore::getSpecialTrainingRequestById($id);
-        if (!$request || ($user['sport'] !== 'all' && ($request['sport'] ?? null) !== $user['sport'])) {
+        $request = SpecialTrainingRequest::with(['student.user', 'student.sport'])
+            ->whereKey($id)
+            ->whereHas('student', fn ($query) => $query->where('sport_id', Auth::user()->coach->sport_id))
+            ->first();
+        if (!$request) {
             return redirect('/coach/special-training')->withErrors(['request' => 'Special training request not found.']);
         }
-
-        $student = AttendanceStore::findUserByStudentId($request['student_id']);
-        $request['student_display'] = $student
-            ? trim($student['first_name'] . ' ' . $student['last_name']) . ' · ' . $request['student_id']
-            : 'Student ID: ' . $request['student_id'];
-
-        $start = strtotime($request['start_date']);
-        $end = strtotime($request['end_date']);
-        $request['date_range'] = date('M j, Y', $start);
-        if ($request['start_date'] !== $request['end_date']) {
-            $request['date_range'] .= ' – ' . date('M j, Y', $end);
-        }
-
-        $request['submitted_at_label'] = !empty($request['submitted_at'])
-            ? date('M j, Y', strtotime($request['submitted_at']))
-            : null;
+        $request = array_merge($request->toArray(), [
+            'title' => 'Special Training Request',
+            'student_id' => $request->student->user->student_id_number,
+            'student_display' => trim($request->student->first_name.' '.$request->student->last_name).' · '.$request->student->user->student_id_number,
+            'date_range' => $request->start_date->toFormattedDateString().($request->start_date->isSameDay($request->end_date) ? '' : ' – '.$request->end_date->toFormattedDateString()),
+            'sport' => strtolower($request->student->sport->name),
+        ]);
 
         return view('coach.special_training_detail', [
             'user' => $user,
@@ -358,44 +368,80 @@ class CoachController extends Controller
         ]);
     }
 
-    public function approveExcuse($id)
+    public function approveExcuse($id, NotificationService $notificationService)
     {
         $user = $this->authorizeCoach();
         if (!$user) {
             return redirect('/login');
         }
 
-        AttendanceStore::approveExcuse($id);
+        $excuse = ExcuseRequest::whereKey($id)
+            ->whereHas('student', fn ($query) => $query->where('sport_id', Auth::user()->coach->sport_id))
+            ->where('status', 'pending')->firstOrFail();
+        $excuse->update(['status' => 'approved', 'reviewed_by' => Auth::id(), 'reviewed_at' => now()]);
+        $notificationService->notifyExcuseDecision($excuse->fresh(['student', 'trainingSchedule']));
         return back()->with('success', 'Excuse request has been approved.');
     }
 
-    public function approveSpecialTraining($id)
+    public function rejectExcuse(string $id, NotificationService $notificationService)
+    {
+        $user = $this->authorizeCoach();
+        if (!$user) return redirect('/login');
+        $excuse = ExcuseRequest::whereKey($id)
+            ->whereHas('student', fn ($query) => $query->where('sport_id', Auth::user()->coach->sport_id))
+            ->where('status', 'pending')->firstOrFail();
+        $excuse->update(['status' => 'rejected', 'reviewed_by' => Auth::id(), 'reviewed_at' => now()]);
+        $notificationService->notifyExcuseDecision($excuse->fresh(['student', 'trainingSchedule']));
+        return back()->with('success', 'Excuse request has been rejected.');
+    }
+
+    public function approveSpecialTraining($id, NotificationService $notificationService)
     {
         $user = $this->authorizeCoach();
         if (!$user) {
             return redirect('/login');
         }
 
-        AttendanceStore::approveSpecialTraining($id);
+        $request = SpecialTrainingRequest::whereKey($id)
+            ->whereHas('student', fn ($query) => $query->where('sport_id', Auth::user()->coach->sport_id))
+            ->where('status', 'pending')->firstOrFail();
+        $request->update(['status' => 'approved', 'reviewed_by' => Auth::id(), 'reviewed_at' => now()]);
+        $notificationService->notifySpecialTrainingDecision($request->fresh('student'));
         return back()->with('success', 'Special training request has been approved.');
     }
 
-    public function athleteProfile(Request $request, string $studentId)
+    public function rejectSpecialTraining(string $id, NotificationService $notificationService)
+    {
+        $user = $this->authorizeCoach();
+        if (!$user) return redirect('/login');
+        $request = SpecialTrainingRequest::whereKey($id)
+            ->whereHas('student', fn ($query) => $query->where('sport_id', Auth::user()->coach->sport_id))
+            ->where('status', 'pending')->firstOrFail();
+        $request->update(['status' => 'rejected', 'reviewed_by' => Auth::id(), 'reviewed_at' => now()]);
+        $notificationService->notifySpecialTrainingDecision($request->fresh('student'));
+        return back()->with('success', 'Special training request has been rejected.');
+    }
+
+    public function athleteProfile(Request $request, string $studentId, AttendancePerformance $performance)
     {
         $user = $this->authorizeCoach();
         if (!$user) {
             return redirect('/login');
         }
 
-        $student = AttendanceStore::findUserByStudentId($studentId);
-        if (!$student || $student['sport'] !== $user['sport']) {
+        $studentModel = \App\Models\Student::with(['user', 'sport'])
+            ->whereHas('user', fn ($query) => $query->where('student_id_number', $studentId))
+            ->where('sport_id', Auth::user()->coach->sport_id)
+            ->first();
+        if (!$studentModel) {
             return redirect('/coach/dashboard');
         }
 
         $year = (int) $request->query('year', now()->year);
         $month = (int) $request->query('month', now()->month);
-        $calendar = AttendanceStore::getMonthlyStatusCalendar($studentId, $year, $month);
-        $counts = AttendanceStore::getMonthCounts($studentId, $year, $month);
+        $calendar = $performance->calendar($studentModel, $year, $month);
+        $counts = $performance->counts($studentModel, $year, $month);
+        $student = $performance->summary($studentModel, $year, $month);
 
         return view('coach.athlete', [
             'user' => $user,

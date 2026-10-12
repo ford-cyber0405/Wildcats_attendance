@@ -101,6 +101,13 @@
             overflow-x: hidden;
         }
 
+        .app-shell,
+        .main-area,
+        .page-content,
+        .content-wrapper {
+            min-width: 0;
+        }
+
         .app-shell > main.hero-page {
             width: 100%;
             max-width: 100%;
@@ -334,8 +341,9 @@
 
         .topbar-left {
             display: flex;
-            flex-direction: column;
-            gap: 6px;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
         }
 
         .topbar-title {
@@ -360,6 +368,10 @@
             gap: 18px;
         }
 
+        .topbar-profile-copy {
+            min-width: 0;
+        }
+
         .icon-btn {
             position: relative;
             width: 60px;
@@ -371,6 +383,26 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: var(--um-white);
             transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .topbar-icon {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            padding: 0;
+            display: inline-grid;
+            place-items: center;
+            line-height: 1;
+            border-radius: 12px;
+        }
+
+        .topbar-icon i {
+            width: 1em;
+            height: 1em;
+            display: grid;
+            place-items: center;
+            font-size: 1.15rem;
+            line-height: 1;
         }
 
         .icon-btn i {
@@ -390,18 +422,41 @@
             position: absolute;
             top: 8px;
             right: 8px;
-            min-width: 22px;
-            height: 22px;
+            min-width: 23px;
+            height: 23px;
             padding: 0 6px;
             border-radius: 999px;
-            background: #d4af37;
-            color: #111;
+            background: linear-gradient(135deg, #ff5b3d, #d92828);
+            color: #fff;
             font-size: 0.78rem;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+            box-shadow: 0 2px 8px rgba(217, 40, 40, 0.45);
+            z-index: 1;
+            animation: notificationBadgePulse 2.4s ease-out infinite;
+        }
+
+        .notification-btn .icon-badge::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border: 1px solid rgba(255, 91, 61, 0.55);
+            border-radius: inherit;
+            animation: notificationBadgeRing 2.4s ease-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes notificationBadgePulse {
+            0%, 100% { box-shadow: 0 2px 8px rgba(217, 40, 40, 0.38); }
+            50% { box-shadow: 0 2px 14px rgba(255, 91, 61, 0.68); }
+        }
+
+        @keyframes notificationBadgeRing {
+            0%, 55%, 100% { opacity: 0; transform: scale(0.8); }
+            20% { opacity: 0.8; }
+            45% { opacity: 0; transform: scale(1.25); }
         }
 
         .page-notice {
@@ -466,12 +521,14 @@
 
         .profile-chip .avatar,
         .profile-chip .avatar-image {
-            width: 50px;
-            height: 50px;
-            border-radius: 16px;
-            object-fit: cover;
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            border-radius: 50%;
             display: grid;
             place-items: center;
+            line-height: 1;
+            font-size: 0.9rem;
             background: rgba(212, 175, 55, 0.2);
             color: var(--um-dark);
             font-weight: 700;
@@ -484,10 +541,14 @@
             height: 128px;
             border-radius: 28px;
             object-fit: cover;
-        }
-
-        .page-content {
+                width: 40px;
+                height: 40px;
+                min-width: 40px;
+                border-radius: 50%;
             flex: 1;
+                place-items: center;
+                line-height: 1;
+                font-size: 0.9rem;
             padding: 30px 42px 42px;
             position: relative;
             min-width: 0;
@@ -811,6 +872,14 @@
             position: relative;
             top: 4px;
             transition: transform 0.28s ease, opacity 0.28s ease;
+            .topbar-icon i {
+                width: 1.15rem;
+                height: 1.15rem;
+                display: inline-grid;
+                place-items: center;
+                font-size: 1.15rem;
+                line-height: 1;
+            }
             pointer-events: none;
         }
 
@@ -2224,6 +2293,33 @@
             margin-left: 6px;
         }
 
+        .dashboard-status-row,
+        .dashboard-nav-row,
+        .dashboard-nav-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dashboard-nav-row {
+            justify-content: space-between;
+        }
+
+        .dashboard-nav-controls {
+            justify-content: flex-end;
+        }
+
+        @media (max-width: 640px) {
+            .dashboard-nav-row {
+                justify-content: flex-start;
+            }
+
+            .dashboard-nav-controls {
+                justify-content: flex-start;
+            }
+        }
+
         .status-chip {
             display: inline-flex;
             align-items: center;
@@ -2295,12 +2391,83 @@
             flex-shrink: 0;
         }
 
+        .button,
+        .icon-btn,
+        .nav-item,
+        .student-card,
+        .coach-card,
+        .form-card,
+        .large-box {
+            animation: pageFadeIn 0.24s ease both;
+        }
+
+        .button,
+        .icon-btn {
+            transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .button:hover,
+        .icon-btn:hover {
+            transform: translateY(-1px) scale(1.015);
+        }
+
+        .button:active,
+        .icon-btn:active {
+            transform: scale(0.98);
+        }
+
+        @keyframes pageFadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .page-actions {
             display: flex;
             flex-wrap: wrap;
             gap: 14px;
             align-items: center;
             margin-top: 20px;
+        }
+
+        .admin-period-form {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .admin-period-input,
+        .admin-period-button {
+            min-height: 2.75rem;
+            border-radius: 0.85rem;
+        }
+
+        .admin-period-input {
+            min-width: 10.5rem;
+            padding: 0.65rem 0.8rem;
+            color: #111;
+            background: #fff;
+            border: 1px solid rgba(212, 175, 55, 0.58);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .admin-period-input:focus {
+            outline: none;
+            border-color: var(--um-bright-gold);
+            box-shadow: 0 0 0 3px rgba(244, 197, 66, 0.2);
+        }
+
+        .admin-period-button {
+            min-width: 4.5rem;
+            transition: background 0.15s ease, transform 0.15s ease;
+        }
+
+        .admin-period-button:hover {
+            background: var(--um-maroon);
+        }
+
+        .admin-period-button:active {
+            transform: scale(0.96);
         }
 
         @keyframes fadeInUp {
@@ -2375,6 +2542,322 @@
 
             .mobile-nav-toggle {
                 display: grid;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: min(20rem, 86vw);
+                min-width: 0;
+                padding: 1.25rem 1rem;
+                box-shadow: 12px 0 36px rgba(0, 0, 0, 0.34);
+            }
+
+            .main-area {
+                width: 100%;
+                margin-left: 0;
+            }
+
+            .topbar {
+                padding: 0.8rem 1rem;
+                gap: 0.75rem;
+            }
+
+            .topbar-left {
+                min-width: 0;
+                flex: 1 1 auto;
+            }
+
+            .topbar-title {
+                font-size: 1.2rem;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .topbar-meta {
+                font-size: 0.78rem;
+                gap: 0.5rem;
+            }
+
+            .topbar-actions {
+                width: auto;
+                flex: 0 0 auto;
+                gap: 0.5rem;
+            }
+
+            .profile-chip {
+                max-width: 11rem;
+                padding: 0.35rem 0.5rem;
+                gap: 0.5rem;
+            }
+
+            .page-content {
+                padding: 1rem 0.75rem 2rem;
+            }
+
+            .content-wrapper,
+            .page-panel,
+            .large-box {
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .large-box {
+                padding: 1rem;
+                border-radius: 1.25rem;
+            }
+
+            .field-row,
+            .grid-two,
+            .profile-form-grid,
+            .table-grid,
+            .coach-columns,
+            .month-grid,
+            .calendar-grid,
+            .roster-grid,
+            .dashboard-metrics-row {
+                grid-template-columns: minmax(0, 1fr) !important;
+            }
+
+            .field-row,
+            .hero-actions,
+            .action-row,
+            .coach-actions,
+            .topbar-actions,
+            .button-row {
+                flex-wrap: wrap;
+            }
+
+            .button,
+            .form-control,
+            .form-select,
+            .form-textarea {
+                max-width: 100%;
+            }
+
+            .form-card,
+            .student-card,
+            .coach-card {
+                min-width: 0;
+                overflow-wrap: anywhere;
+            }
+
+            .form-card form,
+            .coach-actions form,
+            .coach-actions .button {
+                width: 100%;
+            }
+
+            .calendar-cell,
+            .month-cell {
+                min-width: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 88vw;
+            }
+
+            .topbar {
+                align-items: center;
+            }
+
+            .topbar-left {
+                flex-basis: calc(100% - 7rem);
+            }
+
+            .topbar-actions {
+                gap: 0.35rem;
+            }
+
+            .topbar-actions .profile-chip {
+                max-width: 2.5rem;
+                min-width: 2.5rem;
+                justify-content: center;
+                border-radius: 50%;
+            }
+
+            .topbar-actions .profile-chip > div {
+                display: none;
+            }
+
+            .topbar-profile-copy {
+                display: none;
+            }
+
+            .topbar-icon,
+            .icon-btn {
+                width: 2.5rem;
+                height: 2.5rem;
+                min-width: 2.5rem;
+            }
+
+            .avatar {
+                width: 2.5rem;
+                height: 2.5rem;
+                min-width: 2.5rem;
+                border-radius: 50%;
+                font-size: 0.9rem;
+            }
+
+            .page-content {
+                padding: 0.75rem 0.5rem 1.5rem;
+            }
+
+            .large-box,
+            .form-panel {
+                padding: 0.85rem;
+                border-radius: 1rem;
+            }
+
+            .page-title {
+                font-size: clamp(1.65rem, 8vw, 2.2rem) !important;
+                overflow-wrap: anywhere;
+            }
+
+            .hero-copy,
+            .form-help,
+            .topbar-meta {
+                font-size: 0.82rem;
+            }
+
+            .button,
+            .button-large,
+            .button-extra-large {
+                width: 100%;
+                min-width: 0;
+                min-height: 2.75rem;
+                padding: 0.7rem 0.85rem;
+            }
+
+            .calendar-grid,
+            .month-grid {
+                gap: 0.5rem;
+            }
+
+            .calendar-cell,
+            .month-cell,
+            .student-card,
+            .coach-card {
+                padding: 0.75rem;
+                border-radius: 0.9rem;
+            }
+
+            .status-key {
+                gap: 0.45rem;
+                font-size: 0.74rem;
+                flex-wrap: wrap;
+            }
+
+            input,
+            select,
+            textarea {
+                font-size: 1rem;
+            }
+            .topbar-title {
+                max-width: 10rem;
+            }
+
+            .topbar-meta span {
+                max-width: 8rem;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .topbar-actions .profile-chip {
+                padding: 0.25rem;
+            }
+
+            .topbar-actions .profile-chip .avatar {
+                width: 2.5rem;
+                height: 2.5rem;
+                min-width: 2.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            html,
+            body {
+                max-width: 100%;
+                overflow-x: hidden;
+            }
+
+            .page-content,
+            .content-wrapper,
+            .page-panel,
+            .large-box,
+            .form-panel {
+                min-width: 0;
+                overflow-x: hidden;
+            }
+
+            .topbar-icon,
+            .topbar-icon i {
+                flex: 0 0 auto;
+            }
+
+            .hero-actions,
+            .action-row,
+            .button-row,
+            .page-actions,
+            .dashboard-action-row {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .hero-actions > *,
+            .action-row > *,
+            .button-row > *,
+            .page-actions > *,
+            .dashboard-action-row > * {
+                min-width: 0;
+                max-width: 100%;
+            }
+
+            .table-grid,
+            .coach-columns,
+            .roster-grid,
+            .calendar-grid,
+            .month-grid,
+            .dashboard-metrics-row {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .calendar-cell,
+            .month-cell,
+            .student-card,
+            .coach-card,
+            .form-card {
+                overflow-wrap: anywhere;
+                word-break: break-word;
+            }
+
+            .admin-period-form {
+                width: 100%;
+            }
+
+            .admin-period-input {
+                flex: 1 1 11rem;
+                min-width: 0;
+            }
+
+            .admin-period-button {
+                flex: 0 0 auto;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
             }
         }
 
@@ -2577,6 +3060,169 @@
             }
         }
 
+        @media (max-width: 768px) {
+            .hero-page.landing-page,
+            .landing-page .landing-hero,
+            .landing-login-panel,
+            .landing-login-panel .public-form-panel {
+                width: 100%;
+                max-width: 100%;
+                min-width: 0;
+                margin-left: auto;
+                margin-right: auto;
+                overflow-x: hidden;
+            }
+
+            .landing-page .landing-hero {
+                min-height: auto;
+                padding: 3rem 1.25rem;
+                border-radius: 1.5rem;
+            }
+
+            .landing-hero-inner,
+            .landing-hero-copy,
+            .landing-login-panel .public-form-panel {
+                width: 100%;
+                max-width: 100%;
+                min-width: 0;
+                margin-left: auto;
+                margin-right: auto;
+                padding-left: 1.25rem;
+                padding-right: 1.25rem;
+                box-sizing: border-box;
+            }
+
+            .landing-badge {
+                display: flex;
+                width: fit-content;
+                max-width: 100%;
+                margin: 0 auto;
+                justify-content: center;
+                text-align: center;
+                white-space: normal;
+                overflow-wrap: anywhere;
+                font-size: 0.75rem;
+                letter-spacing: 0.08em;
+                line-height: 1.35;
+                padding: 0.65rem 0.8rem;
+            }
+
+            .landing-hero .landing-hero-copy {
+                padding-left: 0;
+                padding-right: 0;
+            }
+
+            .landing-hero .page-title {
+                max-width: 100%;
+                margin-left: auto;
+                margin-right: auto;
+                font-size: clamp(2.35rem, 10vw, 3.6rem);
+                line-height: 1.05;
+                overflow-wrap: anywhere;
+            }
+
+            .landing-hero .landing-subtitle,
+            .landing-login-panel .landing-subtitle {
+                width: 100%;
+                max-width: 100%;
+                padding-left: 0;
+                padding-right: 0;
+                margin-left: auto;
+                margin-right: auto;
+                text-align: center;
+                overflow-wrap: anywhere;
+            }
+
+            .landing-hero .hero-actions,
+            .landing-hero .hero-actions .button,
+            .landing-login-panel .hero-actions,
+            .landing-login-panel .hero-actions .button {
+                width: 100%;
+                max-width: 100%;
+                min-width: 0;
+                box-sizing: border-box;
+            }
+
+            .landing-login-panel .public-form-box {
+                width: 100%;
+                max-width: 100%;
+                min-width: 0;
+                margin-left: auto;
+                margin-right: auto;
+                padding: 1.5rem 1.25rem;
+                box-sizing: border-box;
+            }
+
+            .landing-login-panel .public-form-heading {
+                width: 100%;
+                max-width: 100%;
+                margin-left: auto;
+                margin-right: auto;
+                text-align: center;
+            }
+
+            .landing-login-panel .page-title {
+                font-size: clamp(2rem, 9vw, 2.8rem) !important;
+                line-height: 1.08;
+                overflow-wrap: anywhere;
+            }
+
+            .landing-login-panel .public-login-form,
+            .landing-login-panel .public-login-form .field-group,
+            .landing-login-panel .public-login-form .form-control {
+                width: 100%;
+                max-width: 100%;
+                min-width: 0;
+                box-sizing: border-box;
+            }
+
+            .landing-login-panel .public-login-actions {
+                width: 100%;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .landing-login-panel .public-login-actions .button {
+                width: 100%;
+                max-width: 100%;
+                min-width: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .landing-page .landing-hero {
+                padding: 2.25rem 1.25rem;
+                border-radius: 1.15rem;
+            }
+
+            .landing-hero-inner,
+            .landing-login-panel .public-form-panel {
+                padding-left: 1.25rem;
+                padding-right: 1.25rem;
+            }
+
+            .landing-hero .page-title {
+                font-size: clamp(2.05rem, 10.5vw, 2.7rem);
+            }
+
+            .landing-badge {
+                font-size: 0.68rem;
+                letter-spacing: 0.06em;
+            }
+
+            .landing-login-panel .public-form-box {
+                padding: 1.25rem 1rem;
+                border-radius: 1.25rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .landing-hero-inner,
+            .landing-login-panel .public-form-box {
+                animation: pageFadeIn 0.24s ease both;
+            }
+        }
+
         /* Coaches list styles */
         .coach-grid {
             display: flex;
@@ -2622,17 +3268,6 @@
         /* Edit form header */
         .coach-edit-header { display:flex; gap:12px; align-items:center; margin-bottom:12px; }
         .coach-edit-header .meta { color:var(--um-gray); }
-        .avatar-preview { width:64px; height:64px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,0.06); box-shadow: 0 8px 18px rgba(0,0,0,0.18); }
-        .avatar-preview-wrap { display:flex; gap:8px; align-items:center; }
-        .avatar-clear { padding:6px 10px; height:auto; }
-
-        /* File input styling */
-        .visually-hidden { position: absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-        .file-input { display:flex; gap:12px; align-items:center; }
-        .file-input .file-name { color:var(--um-gray); font-size:0.95rem; }
-        .file-input .file-choose { padding:10px 14px; border-radius:14px; }
-        .file-input .file-choose:hover { transform: translateY(-2px); }
-
         /* Form polish */
         .form-panel { padding: 28px; border-radius: 24px; box-shadow: 0 18px 40px rgba(0,0,0,0.28); }
         .field-group { display:block; }
@@ -2732,56 +3367,6 @@
 
     <script>
         (function(){
-            // Avatar preview for file inputs with id 'avatar' and remove control
-            function handleAvatarInput(input) {
-                if (!input) return;
-                var container = input.closest('.form-panel') || input.parentElement;
-                input.addEventListener('change', function () {
-                    var file = input.files && input.files[0];
-                    var existingWrap = container.querySelector('.avatar-preview-wrap');
-                    if (!file) {
-                        if (existingWrap) existingWrap.remove();
-                        return;
-                    }
-                    var url = URL.createObjectURL(file);
-                    if (existingWrap) {
-                        var img = existingWrap.querySelector('.avatar-preview');
-                        if (img) img.src = url;
-                        return;
-                    }
-                    var wrap = document.createElement('div');
-                    wrap.className = 'avatar-preview-wrap';
-                    var img = document.createElement('img');
-                    img.className = 'avatar-preview';
-                    img.src = url;
-                    var btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'avatar-clear button button-secondary';
-                    btn.textContent = 'Remove';
-                    btn.addEventListener('click', function () {
-                        input.value = '';
-                        if (wrap) wrap.remove();
-                    });
-                    wrap.appendChild(img);
-                    wrap.appendChild(btn);
-                    container.insertBefore(wrap, container.firstChild);
-                });
-            }
-
-            document.querySelectorAll('input[type=file][id=avatar]').forEach(handleAvatarInput);
-
-            // Custom file-input UI: wire .file-choose buttons to hidden inputs and show filename
-            document.querySelectorAll('.file-input').forEach(function (wrap) {
-                var input = wrap.querySelector('input[type=file]');
-                var btn = wrap.querySelector('.file-choose');
-                var nameSpan = wrap.querySelector('.file-name');
-                if (!input || !btn) return;
-                btn.addEventListener('click', function () { input.click(); });
-                input.addEventListener('change', function () {
-                    var file = input.files && input.files[0];
-                    nameSpan.textContent = file ? file.name : 'No file chosen';
-                });
-            });
 
             // Delete confirmation modal
             var modal = document.getElementById('confirm-modal');
@@ -2849,6 +3434,9 @@
                         icon.classList.toggle('bi-eye', !isPwd);
                         icon.classList.toggle('bi-eye-slash', isPwd);
                     }
+                    btn.setAttribute('aria-label', isPwd ? 'Hide password' : 'Show password');
+                    btn.setAttribute('aria-pressed', isPwd ? 'true' : 'false');
+                    btn.setAttribute('title', isPwd ? 'Hide password' : 'Show password');
                 });
             });
         })();

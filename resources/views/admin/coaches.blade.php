@@ -30,11 +30,7 @@
                     @foreach($taekwondo as $coach)
                         <div class="coach-card">
                             <div class="coach-left">
-                                @if(!empty($coach['avatar']))
-                                    <img src="{{ $coach['avatar'] }}" alt="avatar" class="coach-avatar" />
-                                @else
-                                    <div class="coach-initials">{{ strtoupper(substr($coach['first_name'] ?? '', 0, 1) . substr($coach['last_name'] ?? '', 0, 1)) }}</div>
-                                @endif
+                                <div class="coach-initials">{{ strtoupper(substr($coach['first_name'] ?? '', 0, 1) . substr($coach['last_name'] ?? '', 0, 1)) }}</div>
                                 <div class="coach-meta">
                                     <div class="coach-name">{{ $coach['first_name'] }} {{ $coach['last_name'] }}</div>
                                     <div class="coach-sub">{{ $coach['email'] }} · {{ $coach['sport'] }}</div>
@@ -60,11 +56,7 @@
                     @foreach($karatedo as $coach)
                         <div class="coach-card">
                             <div class="coach-left">
-                                @if(!empty($coach['avatar']))
-                                    <img src="{{ $coach['avatar'] }}" alt="avatar" class="coach-avatar" />
-                                @else
-                                    <div class="coach-initials">{{ strtoupper(substr($coach['first_name'] ?? '', 0, 1) . substr($coach['last_name'] ?? '', 0, 1)) }}</div>
-                                @endif
+                                <div class="coach-initials">{{ strtoupper(substr($coach['first_name'] ?? '', 0, 1) . substr($coach['last_name'] ?? '', 0, 1)) }}</div>
                                 <div class="coach-meta">
                                     <div class="coach-name">{{ $coach['first_name'] }} {{ $coach['last_name'] }}</div>
                                     <div class="coach-sub">{{ $coach['email'] }} · {{ $coach['sport'] }}</div>

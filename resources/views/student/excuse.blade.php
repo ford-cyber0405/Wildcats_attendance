@@ -17,10 +17,6 @@
                 </div>
             </div>
             <div class="field-group">
-                <label for="title">Title</label>
-                <input id="title" type="text" name="title" value="{{ old('title') }}" placeholder="Short summary of your excuse" required class="form-control" />
-            </div>
-            <div class="field-group">
                 <label for="reason">Reason</label>
                 <textarea id="reason" name="reason" placeholder="Explain why you need an excuse" required class="form-textarea">{{ old('reason') }}</textarea>
             </div>
@@ -36,23 +32,4 @@
     </div>
 </div>
 
-@if(!empty($unacknowledgedExcuses))
-    @php
-        $excuseItems = array_map(function ($excuse) {
-            return [
-                'label' => $excuse['date'].' — '.$excuse['reason'],
-                'new' => App\Services\AttendanceStore::isNewItem($excuse['approved_at'] ?? $excuse['submitted_at'] ?? null),
-            ];
-        }, $unacknowledgedExcuses);
-        $excuseDescription = 'Your coach approved the following excuse request'.(count($unacknowledgedExcuses) > 1 ? 's' : '').'. Acknowledge it to clear the bell notification.';
-    @endphp
-
-    <x-notification-card
-        title="Approved Excuse Request"
-        :description="$excuseDescription"
-        actionUrl="/student/notifications/acknowledge/excuse"
-        actionLabel="Acknowledge All"
-        :items="$excuseItems"
-    />
-@endif
 @endsection

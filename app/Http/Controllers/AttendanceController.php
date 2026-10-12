@@ -2,7 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Sport;
+use App\Models\Attendance;
+use App\Models\ExcuseRequest;
+use App\Models\ExcuseRequestPhoto;
+use App\Models\Student;
+use App\Models\TrainingSchedule;
+use App\Models\User;
+use App\Services\AttendanceCalculator;
 use App\Services\AttendanceStore;
+use App\Services\NotificationService;
+use App\Services\AttendancePerformance;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 
 class AttendanceController extends Controller
@@ -14,36 +27,36 @@ class AttendanceController extends Controller
 
     public function showLogin()
     {
-        return redirect('/#login');
+        return view('auth.login');
     }
 
     public function login(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'identifier' => 'required|string|max:255',
             'password' => 'required|string',
         ]);
 
-        $identifier = trim($request->input('identifier'));
-        $user = null;
-
+        $identifier = trim($validated['identifier']);
         if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
-            $user = AttendanceStore::findUserByEmail($identifier);
+            $user = User::where('email', strtolower($identifier))
+                ->whereIn('role', ['coach', 'super_admin'])
+                ->first();
         } else {
-            $user = AttendanceStore::findUserByStudentId($identifier);
+            $user = User::where('student_id_number', $identifier)
+                ->where('role', 'student')
+                ->first();
         }
 
-        if ($user && $user['password'] === $request->input('password')) {
-            session(['user' => $user]);
-            if ($user['role'] === 'student') {
-                return redirect('/student/dashboard');
-            }
-            if ($user['role'] === 'coach') {
-                return redirect('/coach/dashboard');
-            }
-            if ($user['role'] === 'admin') {
-                return redirect('/admin/dashboard');
-            }
+        if ($user && Hash::check($validated['password'], $user->password)) {
+            Auth::login($user, $request->boolean('remember'));
+            $request->session()->regenerate();
+
+            return match (Auth::user()->role) {
+                'student' => redirect('/student/dashboard'),
+                'coach' => redirect('/coach/dashboard'),
+                'super_admin' => redirect('/admin/dashboard'),
+            };
         }
 
         return back()->withErrors(['identifier' => 'Login credentials are incorrect.'])->withInput();
@@ -56,7 +69,7 @@ class AttendanceController extends Controller
 
     public function register(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'student_id' => 'required|string|max:50',
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
@@ -67,36 +80,72 @@ class AttendanceController extends Controller
             'password' => 'required|string|min:6|confirmed',
         ]);
 
-        $studentId = trim($request->input('student_id'));
-        if (AttendanceStore::findUserByStudentId($studentId)) {
+        $studentId = trim($validated['student_id']);
+        if (User::where('student_id_number', $studentId)->exists()) {
             return back()->withErrors(['student_id' => 'This Student ID has already been registered.'])->withInput();
         }
 
-        $user = [
-            'id' => uniqid('student_'),
-            'student_id' => $studentId,
-            'email' => null,
-            'password' => $request->input('password'),
-            'role' => 'student',
-            'first_name' => $request->input('first_name'),
-            'middle_name' => $request->input('middle_name') ?: '',
-            'last_name' => $request->input('last_name'),
-            'year_level' => $request->input('year_level'),
-            'course' => $request->input('course'),
-            'contact' => $request->input('contact'),
-            'sport' => $request->input('sport'),
-            'avatar' => null,
-        ];
+        $sport = Sport::whereRaw('LOWER(name) = ?', [strtolower($validated['sport'])])->first();
+        if (!$sport) {
+            return back()->withErrors(['sport' => 'The selected sport is not available.'])->withInput();
+        }
 
-        AttendanceStore::addUser($user);
-        session(['user' => $user]);
+        $user = DB::transaction(function () use ($validated, $studentId, $sport) {
+            $user = User::create([
+                'role' => 'student',
+                'student_id_number' => $studentId,
+                'password' => $validated['password'],
+            ]);
+
+            $user->student()->create([
+                'sport_id' => $sport->id,
+                'first_name' => $validated['first_name'],
+                'middle_initial' => $validated['middle_name'] ?? null,
+                'last_name' => $validated['last_name'],
+                'course' => $validated['course'],
+                'year_level' => $validated['year_level'],
+            ]);
+
+            return $user;
+        });
+
+        Auth::login($user, $request->boolean('remember'));
+        $request->session()->regenerate();
         return redirect('/student/dashboard')->with('success', 'Student account created successfully with your university-issued ID.');
     }
 
     public function logout()
     {
-        session()->flush();
+        Auth::logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
         return redirect('/');
+    }
+
+    public function notifications(NotificationService $notificationService)
+    {
+        $user = Auth::user();
+        abort_unless($user, 401);
+
+        return view('notifications.index', [
+            'notifications' => $notificationService->unreadFor($user),
+        ]);
+    }
+
+    public function markNotificationRead(int $notificationId, NotificationService $notificationService)
+    {
+        $user = Auth::user();
+        abort_unless($user, 401);
+
+        abort_unless($notificationService->markRead($user, $notificationId), 404);
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'unread_count' => $notificationService->unreadCount($user),
+            ]);
+        }
+
+        return back()->with('success', 'Notification marked as read.');
     }
 
     public function showProfile()
@@ -184,23 +233,41 @@ class AttendanceController extends Controller
 
     protected function authorizeStudent()
     {
-        $user = AttendanceStore::currentUser();
-        if (!$user || $user['role'] !== 'student') {
-            return redirect('/login');
+        $user = Auth::user();
+        if (!$user || $user->role !== 'student' || !$user->student) {
+            return null;
         }
 
-        if (!empty($user['student_id']) && !empty($user['sport'])) {
-            AttendanceStore::autoMarkAbsentIfNeeded($user['student_id'], $user['sport']);
+        $student = $user->student;
+        $userData = array_merge($user->toArray(), [
+            'student_id' => $user->student_id_number,
+            'first_name' => $student->first_name,
+            'middle_name' => $student->middle_initial,
+            'last_name' => $student->last_name,
+            'year_level' => $student->year_level,
+            'course' => $student->course,
+            'sport' => strtolower($student->sport->name),
+        ]);
+
+        if (!empty($userData['student_id']) && !empty($userData['sport'])) {
+            AttendanceStore::autoMarkAbsentIfNeeded($userData['student_id'], $userData['sport']);
         }
 
-        return $user;
+        return $userData;
     }
 
-    public function studentDashboard(Request $request)
+    public function studentDashboard(Request $request, AttendancePerformance $performance)
     {
         $user = $this->authorizeStudent();
         if (!$user) {
             return redirect('/login');
+        }
+
+        if ($request->session()->has('attendance_notice')) {
+            return view('student.no-schedule', [
+                'user' => $user,
+                'message' => $request->session()->get('attendance_notice'),
+            ]);
         }
 
         $year = $request->query('year', now()->year);
@@ -208,17 +275,19 @@ class AttendanceController extends Controller
         $year = (int) $year;
         $month = (int) $month;
 
-        $calendar = AttendanceStore::getMonthlyStatusCalendar($user['student_id'], $year, $month);
-        $counts = AttendanceStore::getMonthCounts($user['student_id'], $year, $month);
+        $student = Auth::user()->student;
+        $calendar = $performance->calendar($student, $year, $month);
+        $counts = $performance->counts($student, $year, $month);
         $today = now()->format('Y-m-d');
-        $todayAttendance = AttendanceStore::getAttendanceForDate($user['student_id'], $today);
+        $todayAttendance = Attendance::with('trainingSchedule')
+            ->where('student_id', $student->id)
+            ->whereHas('trainingSchedule', fn ($query) => $query->whereDate('training_date', $today))
+            ->first()?->toArray();
         $startDate = AttendanceStore::systemStartDate();
         $isBeforeStartDate = strtotime($today) < strtotime($startDate);
         $isTodaySunday = date('w', strtotime($today)) === 0;
         $monthKey = sprintf('%d-%02d', $year, $month);
         $latestSchedule = AttendanceStore::getLatestSchedule($user['sport'], $monthKey);
-        $latestAnnouncement = AttendanceStore::getLatestAnnouncement($user['sport'], $monthKey);
-        $unreadSchedule = AttendanceStore::hasUnreadScheduleNotifications($user['student_id'], $user['sport']);
 
         return view('student.dashboard', [
             'user' => $user,
@@ -228,8 +297,6 @@ class AttendanceController extends Controller
             'month' => $month,
             'monthName' => date('F', strtotime("{$year}-{$month}-01")),
             'latestSchedule' => $latestSchedule,
-            'latestAnnouncement' => $latestAnnouncement,
-            'unreadSchedule' => $unreadSchedule,
             'todayAttendance' => $todayAttendance,
             'isTodaySunday' => $isTodaySunday,
             'isBeforeStartDate' => $isBeforeStartDate,
@@ -237,46 +304,65 @@ class AttendanceController extends Controller
         ]);
     }
 
-    public function studentAttend(Request $request)
+    public function studentAttend(Request $request, AttendanceCalculator $attendanceCalculator)
     {
         $user = $this->authorizeStudent();
         if (!$user) {
             return redirect('/login');
         }
 
-        $request->validate([
-            'action' => 'required|in:present,late,absent',
-        ]);
+        $student = Auth::user()->student;
+        $now = now();
 
-        $date = now()->format('Y-m-d');
-        $startDate = AttendanceStore::systemStartDate();
-        if (strtotime($date) < strtotime($startDate)) {
-            return back()->with('error', "Attendance tracking starts on {$startDate}. Please submit on or after that date.");
+        $schedule = TrainingSchedule::whereDate('training_date', $now->toDateString())
+            ->where('sport_id', $student->sport_id)
+            ->where('status', 'training')
+            ->first();
+
+        if (!$schedule) {
+            $message = 'There is no active training schedule for your sport today. You can check the schedule page for upcoming training sessions.';
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $message,
+                ], 422);
+            }
+
+            return redirect('/student/dashboard')->with('attendance_notice', $message);
         }
 
-        if (now()->isSunday()) {
-            return back()->with('error', 'Sunday is a no-training day. Attendance cannot be submitted.');
+        $status = $attendanceCalculator->determineStatus($schedule, $now);
+        if ($status === 'closed') {
+            return response()->json([
+                'message' => 'Attendance is closed for this training schedule.',
+            ], 422);
         }
 
-        $action = $request->input('action');
-        $time = now()->format('H:i');
-        $sport = $user['sport'];
-        $existingRecord = AttendanceStore::getAttendanceForDate($user['student_id'], $date);
-
-        if (!empty($existingRecord) && $existingRecord['status'] === 'no_training') {
-            return back()->with('error', 'Attendance cannot be submitted on a no-training day.');
+        if (Attendance::where('student_id', $student->id)
+            ->where('training_schedule_id', $schedule->id)
+            ->exists()) {
+            return response()->json([
+                'message' => 'Attendance has already been recorded for this training schedule.',
+            ], 409);
         }
 
-        if ($action === 'present') {
-            $cutoff = now()->copy()->setTime(8, 30);
-            $status = now()->lessThanOrEqualTo($cutoff) ? 'present' : 'late';
-        } else {
-            $status = $action;
+        try {
+            $attendance = DB::transaction(fn () => Attendance::create([
+                'student_id' => $student->id,
+                'training_schedule_id' => $schedule->id,
+                'time_in' => $now,
+                'status' => $status,
+            ]));
+        } catch (\Illuminate\Database\UniqueConstraintViolationException) {
+            return response()->json([
+                'message' => 'Attendance has already been recorded for this training schedule.',
+            ], 409);
         }
 
-        AttendanceStore::addAttendance($user['student_id'], $date, $status, $time, $sport, 'Checked in');
-
-        return redirect('/student/dashboard')->with('success', "Attendance saved as {$status} at {$time}.");
+        return response()->json([
+            'status' => $attendance->status,
+            'time_in' => $attendance->time_in->format('Y-m-d H:i:s'),
+        ], 201);
     }
 
     public function showExcuse()
@@ -286,36 +372,51 @@ class AttendanceController extends Controller
             return redirect('/login');
         }
 
-        $unacknowledgedExcuses = AttendanceStore::getUnacknowledgedApprovedExcuses($user['student_id']);
-
         return view('student.excuse', [
             'user' => $user,
-            'unacknowledgedExcuses' => $unacknowledgedExcuses,
         ]);
     }
 
-    public function sendExcuse(Request $request)
+    public function sendExcuse(Request $request, NotificationService $notificationService)
     {
         $user = $this->authorizeStudent();
         if (!$user) {
             return redirect('/login');
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'date' => 'required|date',
-            'title' => 'required|string|max:120',
             'reason' => 'required|string|max:400',
             'photos.*' => 'nullable|image|max:4096',
         ]);
 
-        AttendanceStore::addExcuse(
-            $user['student_id'],
-            $request->input('date'),
-            $request->input('title'),
-            $request->input('reason'),
-            $request->file('photos', []),
-            $user['sport']
-        );
+        $student = Auth::user()->student;
+        $schedule = TrainingSchedule::whereDate('training_date', $validated['date'])
+            ->where('sport_id', $student->sport_id)
+            ->where('status', 'training')
+            ->first();
+
+        if (!$schedule) {
+            return back()->withErrors(['date' => 'No training schedule exists for your sport on that date.'])->withInput();
+        }
+
+        $excuse = DB::transaction(function () use ($student, $schedule, $validated, $request) {
+            $excuse = ExcuseRequest::create([
+                'student_id' => $student->id,
+                'training_schedule_id' => $schedule->id,
+                'reason' => $validated['reason'],
+                'status' => 'pending',
+            ]);
+
+            foreach ($request->file('photos', []) as $photo) {
+                $excuse->photos()->create([
+                    'photo_path' => $photo->store('excuse-requests', 'public'),
+                ]);
+            }
+
+            return $excuse;
+        });
+        $notificationService->notifyExcuseSubmitted($excuse->fresh('student'));
 
         return redirect('/student/dashboard')->with('success', 'Your excuse request was sent to the coach for review.');
     }
@@ -332,35 +433,32 @@ class AttendanceController extends Controller
         ]);
     }
 
-    public function sendSpecialTraining(Request $request)
+    public function sendSpecialTraining(Request $request, NotificationService $notificationService)
     {
         $user = $this->authorizeStudent();
         if (!$user) {
             return redirect('/login');
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'title' => 'required|string|max:120',
             'reason' => 'required|string|max:400',
-            'photos.*' => 'nullable|image|max:4096',
         ]);
 
-        AttendanceStore::addSpecialTrainingRequest(
-            $user['student_id'],
-            $request->input('start_date'),
-            $request->input('end_date'),
-            $request->input('title'),
-            $request->input('reason'),
-            $request->file('photos', []),
-            $user['sport']
-        );
+        $specialTrainingRequest = \App\Models\SpecialTrainingRequest::create([
+            'student_id' => Auth::user()->student->id,
+            'start_date' => $validated['start_date'],
+            'end_date' => $validated['end_date'],
+            'reason' => $validated['reason'],
+            'status' => 'pending',
+        ]);
+        $notificationService->notifySpecialTrainingSubmitted($specialTrainingRequest->fresh('student'));
 
         return redirect('/student/special-training')->with('success', 'Your special training request was sent to your coach for approval.');
     }
 
-    public function studentRoster(Request $request)
+    public function studentRoster(Request $request, AttendancePerformance $performance)
     {
         $user = $this->authorizeStudent();
         if (!$user) {
@@ -376,7 +474,7 @@ class AttendanceController extends Controller
             $month = (int) $currentMonth->format('m');
         }
 
-        $students = AttendanceStore::allStudentsStatus($user['sport'], $year, $month);
+        $students = $performance->students(Auth::user()->student->sport_id, $year, $month)->all();
         $search = $request->query('search', '');
         if ($search) {
             $students = array_filter($students, function ($student) use ($search) {
@@ -416,7 +514,6 @@ class AttendanceController extends Controller
         }
 
         $schedules = AttendanceStore::getSchedules($user['sport'], $monthKey);
-        $unreadSchedule = AttendanceStore::hasUnreadScheduleNotifications($user['student_id'], $user['sport']);
         $schedulePublishedAt = AttendanceStore::getScheduleUpdateTime($user['sport']);
 
         $availableMonths = [];
@@ -432,7 +529,6 @@ class AttendanceController extends Controller
         return view('student.schedule', [
             'user' => $user,
             'schedules' => $schedules,
-            'unreadSchedule' => $unreadSchedule,
             'schedulePublishedAt' => $schedulePublishedAt,
             'monthKey' => $monthKey,
             'monthLabel' => $selectedMonth->format('F Y'),
@@ -442,36 +538,4 @@ class AttendanceController extends Controller
         ]);
     }
 
-    public function studentAnnouncements(Request $request)
-    {
-        $user = $this->authorizeStudent();
-        if (!$user) {
-            return redirect('/login');
-        }
-
-        $monthKey = now()->format('Y-m');
-        $announcements = AttendanceStore::getAnnouncements($user['sport'], $monthKey);
-        $unreadAnnouncements = AttendanceStore::hasUnreadAnnouncementNotifications($user['student_id'], $user['sport']);
-
-        return view('student.announcements', [
-            'user' => $user,
-            'announcements' => $announcements,
-            'unreadAnnouncements' => $unreadAnnouncements,
-        ]);
-    }
-
-    public function acknowledgeNotification(Request $request, string $type)
-    {
-        $user = $this->authorizeStudent();
-        if (!$user) {
-            return redirect('/login');
-        }
-
-        if (!in_array($type, ['schedule', 'announcement', 'excuse', 'special_training'], true)) {
-            return back();
-        }
-
-        AttendanceStore::acknowledgeStudentNotification($user['student_id'], $type);
-        return back();
-    }
 }

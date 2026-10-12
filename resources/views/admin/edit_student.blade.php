@@ -20,14 +20,14 @@
                         <option value="present">Present</option>
                         <option value="late">Late</option>
                         <option value="absent">Absent</option>
-                        <option value="excuse">Excuse</option>
+                        <option value="excused">Excused</option>
                     </select>
                 </div>
             </div>
             <div class="field-row">
                 <div class="field-group">
                     <label for="time">Time</label>
-                    <input id="time" name="time" type="time" value="{{ now()->format('H:i') }}" required />
+                    <input id="time" name="time" type="time" value="{{ now()->format('H:i') }}" />
                     <p class="form-help">Enter the attendance time for the selected date.</p>
                 </div>
             </div>
