@@ -18,9 +18,6 @@ RUN apt-get update && apt-get install -y \
 RUN rm -f /etc/apache2/mods-enabled/mpm_*.load /etc/apache2/mods-enabled/mpm_*.conf \
     && a2enmod mpm_prefork rewrite
 
-# Make Apache use port 10000 (Render default)
-RUN sed -i 's/Listen 80/Listen 10000/g' /etc/apache2/ports.conf \
-    && sed -i 's/<VirtualHost \*:80>/<VirtualHost *:10000>/g' /etc/apache2/sites-available/000-default.conf
 
 # Set Laravel public as document root
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf \
@@ -66,8 +63,10 @@ RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framewor
 # (Optional) Run migrations
 
 
-# Expose port
+# Railway supplies PORT at runtime
 EXPOSE 10000
 
-# Start Apache
-CMD ["apache2-foreground"]
+COPY start-apache.sh /usr/local/bin/start-apache.sh
+RUN chmod +x /usr/local/bin/start-apache.sh
+
+CMD ["/usr/local/bin/start-apache.sh"]
