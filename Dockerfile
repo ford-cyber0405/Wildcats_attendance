@@ -15,8 +15,10 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Enable Apache rewrite
-RUN a2enmod rewrite
+# Enable only one Apache MPM and enable URL rewriting
+RUN a2dismod mpm_event || true
+RUN a2dismod mpm_worker || true
+RUN a2enmod mpm_prefork rewrite
 
 # Make Apache use port 10000 (Render default)
 RUN sed -i 's/Listen 80/Listen 10000/g' /etc/apache2/ports.conf \
