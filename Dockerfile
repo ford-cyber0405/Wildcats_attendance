@@ -14,9 +14,12 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pdo pdo_mysql pdo_pgsql zip mbstring xml \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-# Ensure only one Apache MPM is enabled
-RUN rm -f /etc/apache2/mods-enabled/mpm_*.load /etc/apache2/mods-enabled/mpm_*.conf \
-    && a2enmod mpm_prefork rewrite
+# Ensure only one Apache MPM is enabled (prefork, required for mod_php)
+RUN a2dismod -f mpm_event mpm_worker mpm_prefork || true
+RUN rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.* /etc/apache2/mods-enabled/mpm_prefork.*
+RUN a2enmod mpm_prefork rewrite
+# Fail the build if more than one MPM is loaded
+RUN apache2ctl -M 2>/dev/null | grep -c 'mpm_' | grep -qx 1
 
 # Make Apache use port 10000 (Render default)
 RUN sed -i 's/Listen 80/Listen 10000/g' /etc/apache2/ports.conf \
