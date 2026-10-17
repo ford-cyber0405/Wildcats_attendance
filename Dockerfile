@@ -48,6 +48,10 @@ WORKDIR /var/www/html
 # Copy Laravel app
 COPY . .
 
+# Install startup script that guarantees a single MPM at runtime
+COPY start-apache.sh /usr/local/bin/start-apache.sh
+RUN chmod +x /usr/local/bin/start-apache.sh
+
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
@@ -73,4 +77,4 @@ RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framewor
 EXPOSE 10000
 
 # Start Apache
-CMD ["apache2-foreground"]
+CMD ["/usr/local/bin/start-apache.sh"]
