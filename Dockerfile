@@ -64,7 +64,7 @@ RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framewor
     && chmod -R 775 storage bootstrap/cache public/uploads
 
 # (Optional) Run migrations
-RUN php artisan migrate --force || true
+
 
 # Expose port
 EXPOSE 10000
