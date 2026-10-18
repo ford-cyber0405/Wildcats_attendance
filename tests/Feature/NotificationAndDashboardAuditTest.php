@@ -280,4 +280,33 @@ class NotificationAndDashboardAuditTest extends TestCase
             $this->app->useStoragePath($originalStoragePath);
         }
     }
+
+    public function test_admin_can_delete_coach_account_and_profile(): void
+    {
+        $sport = Sport::create(['name' => 'taekwondo']);
+        $admin = User::create([
+            'role' => 'super_admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('secret'),
+        ]);
+        $coachUser = User::create([
+            'role' => 'coach',
+            'email' => 'coach@example.com',
+            'password' => bcrypt('secret'),
+        ]);
+        Coach::create([
+            'user_id' => $coachUser->id,
+            'sport_id' => $sport->id,
+            'first_name' => 'Test',
+            'last_name' => 'Coach',
+        ]);
+
+        $this->actingAs($admin)
+            ->post('/admin/coach/' . $coachUser->id . '/delete')
+            ->assertRedirect('/admin/coaches');
+
+        $this->assertDatabaseMissing('users', ['id' => $coachUser->id]);
+        $this->assertDatabaseMissing('coaches', ['user_id' => $coachUser->id]);
+        $this->get('/admin/coaches')->assertOk()->assertDontSee('coach@example.com');
+    }
 }

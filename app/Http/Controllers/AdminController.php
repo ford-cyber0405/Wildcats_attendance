@@ -164,7 +164,13 @@ class AdminController extends Controller
             return redirect('/login');
         }
 
-        User::whereKey($id)->where('role', 'coach')->firstOrFail()->delete();
+        $coachUser = User::whereKey($id)->where('role', 'coach')->firstOrFail();
+
+        DB::transaction(function () use ($coachUser) {
+            $coachUser->coach()->delete();
+            $coachUser->delete();
+        });
+
         return redirect('/admin/coaches')->with('success', 'Coach account deleted.');
     }
 
