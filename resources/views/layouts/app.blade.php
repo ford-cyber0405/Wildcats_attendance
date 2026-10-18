@@ -6,11 +6,13 @@
     <meta name="theme-color" content="#32000F" />
     <script>
         try {
-            if (localStorage.getItem('um-attendance-theme') === 'light') {
-                document.documentElement.dataset.theme = 'light';
-            }
+            document.documentElement.dataset.theme =
+                localStorage.getItem('um-attendance-theme') === 'dark' ? 'dark' : 'light';
+            document.querySelector('meta[name="theme-color"]').content =
+                document.documentElement.dataset.theme === 'dark' ? '#32000F' : '#F5F0E7';
         } catch (error) {
             console.error('Unable to load the saved appearance preference.', error);
+            document.documentElement.dataset.theme = 'light';
         }
     </script>
     <title>@yield('title', 'UM Taekwondo and Karatedo Attendance')</title>
@@ -3831,6 +3833,7 @@
         html[data-theme="light"] .profile-panel,
         html[data-theme="light"] .profile-meta-card,
         html[data-theme="light"] .profile-picture-card,
+        html[data-theme="light"] .profile-picture-preview,
         html[data-theme="light"] .section-card,
         html[data-theme="light"] .calendar-cell,
         html[data-theme="light"] .student-card,
@@ -3899,6 +3902,197 @@
 
         html[data-theme="light"] .landing-login-panel {
             background: linear-gradient(180deg, #efe7d9 0%, #f7f3eb 100%);
+        }
+
+        html[data-theme="light"] .hero-stat,
+        html[data-theme="light"] .toast,
+        html[data-theme="light"] .notification-card,
+        html[data-theme="light"] .page-notice {
+            color: #302124;
+            border-color: rgba(128, 0, 0, 0.14);
+            box-shadow: 0 12px 32px rgba(61, 34, 36, 0.06);
+        }
+
+        html[data-theme="light"] .hero-stat,
+        html[data-theme="light"] .toast,
+        html[data-theme="light"] .notification-card {
+            background: #fffdf9;
+        }
+
+        html[data-theme="light"] .page-notice {
+            background: #f5eee5;
+        }
+
+        html[data-theme="light"] .hero-stat h3,
+        html[data-theme="light"] .hero-stat strong,
+        html[data-theme="light"] .student-info h3,
+        html[data-theme="light"] .student-info p,
+        html[data-theme="light"] .month-cell h4,
+        html[data-theme="light"] .month-cell p,
+        html[data-theme="light"] .profile-meta-label,
+        html[data-theme="light"] .profile-meta-value,
+        html[data-theme="light"] .profile-meta-card h3,
+        html[data-theme="light"] .profile-picture-card h3,
+        html[data-theme="light"] .announcement-card h3,
+        html[data-theme="light"] .announcement-body,
+        html[data-theme="light"] .announcement-time,
+        html[data-theme="light"] .coach-name,
+        html[data-theme="light"] .coach-sub,
+        html[data-theme="light"] .coach-column-title,
+        html[data-theme="light"] .calendar-cell h4,
+        html[data-theme="light"] .calendar-cell p,
+        html[data-theme="light"] .stat-block strong,
+        html[data-theme="light"] .section-card h3,
+        html[data-theme="light"] .section-card p,
+        html[data-theme="light"] .checkbox-label,
+        html[data-theme="light"] .form-label,
+        html[data-theme="light"] .field-row.two-column label,
+        html[data-theme="light"] .toast-content strong,
+        html[data-theme="light"] .toast-content ul,
+        html[data-theme="light"] .notification-list,
+        html[data-theme="light"] .notification-checkbox,
+        html[data-theme="light"] .sidebar-footer,
+        html[data-theme="light"] .sidebar-footer strong {
+            color: #514247;
+        }
+
+        html[data-theme="light"] .announcement-badge,
+        html[data-theme="light"] .badge {
+            background: #f5eee5;
+            border-color: rgba(128, 0, 0, 0.12);
+            color: #800000;
+        }
+
+        html[data-theme="light"] .table-grid > *,
+        html[data-theme="light"] .calendar-grid > *,
+        html[data-theme="light"] .stat-grid > *,
+        html[data-theme="light"] .dashboard-metrics-row > * {
+            color: #302124;
+        }
+
+        html[data-theme="light"] table {
+            color: #302124;
+            border-color: rgba(128, 0, 0, 0.12);
+        }
+
+        html[data-theme="light"] th {
+            background: #eee4d8;
+            color: #49383d;
+        }
+
+        html[data-theme="light"] td,
+        html[data-theme="light"] tr {
+            border-color: rgba(128, 0, 0, 0.1);
+        }
+
+        html[data-theme="light"] tr:nth-child(even) {
+            background: rgba(128, 0, 0, 0.035);
+        }
+
+        html[data-theme="light"] .empty-day,
+        html[data-theme="light"] .rest-day {
+            background: #f4eee5;
+        }
+
+        html[data-theme="light"] [style*="color: rgba(247"],
+        html[data-theme="light"] [style*="color:rgba(247"],
+        html[data-theme="light"] [style*="color: rgba(255,255,255"],
+        html[data-theme="light"] [style*="color:rgba(255,255,255"],
+        html[data-theme="light"] [style*="color: rgba(255, 255, 255"],
+        html[data-theme="light"] [style*="color:rgba(255, 255, 255"],
+        html[data-theme="light"] [style*="color: #fff"],
+        html[data-theme="light"] [style*="color: #f3f3f3"] {
+            color: #66575b !important;
+        }
+
+        html[data-theme="light"] [style*="background: rgba(255,255,255"],
+        html[data-theme="light"] [style*="background:rgba(255,255,255"],
+        html[data-theme="light"] [style*="background: rgba(255, 255, 255"],
+        html[data-theme="light"] [style*="background:rgba(255, 255, 255"],
+        html[data-theme="light"] [style*="background: linear-gradient(180deg, rgba(255,255,255"] {
+            background: #f5eee5 !important;
+            border-color: rgba(128, 0, 0, 0.1) !important;
+            color: #302124 !important;
+        }
+
+        html[data-theme="light"] .coach-student-card[style*="background"] {
+            color: #302124 !important;
+        }
+
+        html[data-theme="light"] .button,
+        html[data-theme="light"] button {
+            color: inherit;
+        }
+
+        html[data-theme="light"] .button-primary,
+        html[data-theme="light"] button.button-primary,
+        html[data-theme="light"] .button-danger,
+        html[data-theme="light"] .button-present,
+        html[data-theme="light"] .button-absent,
+        html[data-theme="light"] .button-late,
+        html[data-theme="light"] .button-excuse {
+            color: #fff;
+        }
+
+        html[data-theme="light"] .hero-page.landing-page .landing-hero h1,
+        html[data-theme="light"] .hero-page.landing-page .landing-hero .landing-subtitle {
+            color: #800000;
+        }
+
+        html[data-theme="dark"] .hero-page.landing-page > .landing-hero {
+            background: linear-gradient(110deg, #23060b 0%, #300712 62%, #20050d 100%);
+            color: #fff;
+        }
+
+        html[data-theme="dark"] .hero-page.landing-page .landing-hero::after {
+            mix-blend-mode: screen;
+            opacity: 0.42;
+        }
+
+        html[data-theme="dark"] .hero-page.landing-page .landing-hero h1,
+        html[data-theme="dark"] .hero-page.landing-page .landing-hero h1 .page-title-subline {
+            color: #fff;
+        }
+
+        html[data-theme="dark"] .hero-page.landing-page .landing-hero .landing-subtitle {
+            color: var(--um-offwhite);
+        }
+
+        html[data-theme="dark"] .landing-login-panel {
+            background: linear-gradient(180deg, #23060b 0%, #300712 100%);
+        }
+
+        html[data-theme="dark"] .landing-login-panel .public-form-box {
+            background: rgba(44, 6, 14, 0.98);
+            border-color: rgba(212, 175, 55, 0.24);
+            color: #fff;
+        }
+
+        html[data-theme="dark"] .landing-login-panel .public-form-heading .page-title {
+            color: #fff;
+            -webkit-text-fill-color: #fff;
+        }
+
+        html[data-theme="dark"] .landing-login-panel .landing-subtitle,
+        html[data-theme="dark"] .landing-login-panel .public-login-form label {
+            color: var(--um-offwhite);
+        }
+
+        html[data-theme="dark"] .landing-login-panel .public-login-form {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        html[data-theme="dark"] .landing-login-panel .public-login-form .form-control {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.16);
+            color: #fff;
+        }
+
+        html[data-theme="dark"] .landing-login-panel .button-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.16);
+            color: #fff;
         }
 
         @media (max-width: 640px) {
@@ -4054,14 +4248,12 @@
 
             var darkModeToggle = document.getElementById('dark-mode-toggle');
             if (darkModeToggle) {
-                darkModeToggle.checked = document.documentElement.dataset.theme !== 'light';
+                darkModeToggle.checked = document.documentElement.dataset.theme === 'dark';
                 darkModeToggle.addEventListener('change', function () {
                     var theme = darkModeToggle.checked ? 'dark' : 'light';
-                    if (theme === 'light') {
-                        document.documentElement.dataset.theme = 'light';
-                    } else {
-                        document.documentElement.removeAttribute('data-theme');
-                    }
+                    document.documentElement.dataset.theme = theme;
+                    document.querySelector('meta[name="theme-color"]').content =
+                        theme === 'dark' ? '#32000F' : '#F5F0E7';
 
                     try {
                         localStorage.setItem('um-attendance-theme', theme);
@@ -4076,14 +4268,12 @@
                     return;
                 }
 
-                if (event.newValue === 'light') {
-                    document.documentElement.dataset.theme = 'light';
-                } else {
-                    document.documentElement.removeAttribute('data-theme');
-                }
+                document.documentElement.dataset.theme = event.newValue === 'dark' ? 'dark' : 'light';
+                document.querySelector('meta[name="theme-color"]').content =
+                    document.documentElement.dataset.theme === 'dark' ? '#32000F' : '#F5F0E7';
 
                 if (darkModeToggle) {
-                    darkModeToggle.checked = event.newValue !== 'light';
+                    darkModeToggle.checked = event.newValue === 'dark';
                 }
             });
 
