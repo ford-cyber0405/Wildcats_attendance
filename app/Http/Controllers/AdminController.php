@@ -157,22 +157,46 @@ class AdminController extends Controller
         return redirect('/admin/coaches')->with('success', 'Coach updated successfully.');
     }
 
-    public function deleteCoach(string $id)
-    {
-        $user = $this->authorizeAdmin();
-        if (!$user) {
-            return redirect('/login');
-        }
+    
+public function deleteCoach(string $id)
+{
+    $user = $this->authorizeAdmin();
 
-        $coachUser = User::whereKey($id)->where('role', 'coach')->firstOrFail();
-
-        DB::transaction(function () use ($coachUser) {
-            $coachUser->coach()->delete();
-            $coachUser->delete();
-        });
-
-        return redirect('/admin/coaches')->with('success', 'Coach account deleted.');
+    if (!$user) {
+        return redirect('/login');
     }
+
+    $coachUser = User::whereKey($id)
+        ->where('role', 'coach')
+        ->firstOrFail();
+
+    $coach = Coach::where('user_id', $coachUser->id)->first();
+
+    if (!$coach) {
+        return redirect('/admin/coaches')
+            ->withErrors(['coach' => 'Coach profile not found.']);
+    }
+
+    // Preserve schedules: do not delete a coach who has schedules.
+    $hasSchedules = TrainingSchedule::where('coach_id', $coach->id)
+        ->exists();
+
+    if ($hasSchedules) {
+        return redirect('/admin/coaches')
+            ->withErrors([
+                'coach' => 'This coach cannot be deleted because they have training schedules. Reassign or remove the schedules first.'
+            ]);
+    }
+
+    DB::transaction(function () use ($coachUser, $coach) {
+        $coach->delete();
+        $coachUser->delete();
+    });
+
+    return redirect('/admin/coaches')
+        ->with('success', 'Coach account deleted successfully.');
+}
+
 
     public function createCoach(Request $request)
     {
