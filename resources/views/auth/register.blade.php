@@ -22,7 +22,7 @@
                 <div class="field-row">
                     <div class="field-group">
                         <label for="student_id">Student ID</label>
-                        <input id="student_id" type="text" name="student_id" value="{{ old('student_id') }}" required placeholder="UM123456" class="form-control" />
+                        <input id="student_id" type="text" name="student_id" value="{{ old('student_id') }}" required placeholder="123456" class="form-control" />
                     </div>
                     <div class="field-group">
                         <label for="first_name">First Name</label>

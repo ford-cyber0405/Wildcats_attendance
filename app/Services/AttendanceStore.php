@@ -1627,7 +1627,7 @@ class AttendanceStore
     {
         $data = self::all();
         $data['users'] = array_values(array_filter($data['users'], function ($user) use ($studentId) {
-            return $user['student_id'] !== $studentId;
+            return (string) ($user['student_id'] ?? '') !== $studentId;
         }));
         self::save($data);
     }
