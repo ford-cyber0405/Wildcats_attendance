@@ -68,6 +68,97 @@
         filter: saturate(0.65);
     }
 
+    .student-dashboard-header {
+        display: grid;
+        gap: 14px;
+        min-width: 0;
+    }
+
+    .student-dashboard-intro {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .student-dashboard-intro .page-title {
+        width: 100%;
+    }
+
+    .student-dashboard-profile-badges {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .student-dashboard-profile-badges .badge,
+    .student-dashboard-profile-badges .badge + .badge {
+        margin: 0;
+    }
+
+    .dashboard-nav-controls > .button {
+        width: auto;
+        min-width: 108px;
+    }
+
+    .dashboard-nav-label-short {
+        display: none;
+    }
+
+    @media (max-width: 640px) {
+        .student-dashboard-header {
+            gap: 12px;
+        }
+
+        .student-dashboard-profile-badges {
+            gap: 8px;
+        }
+
+        .student-dashboard-profile-badges .badge {
+            min-height: 40px;
+            padding: 8px 12px;
+            font-size: 0.82rem;
+        }
+
+        .student-dashboard-intro .page-title::after {
+            margin-top: 10px;
+            height: 5px;
+        }
+
+        .dashboard-nav-row {
+            align-items: stretch;
+            gap: 10px;
+        }
+
+        .dashboard-nav-row > .badge,
+        .dashboard-nav-controls {
+            width: 100%;
+        }
+
+        .dashboard-nav-controls {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 8px;
+        }
+
+        .dashboard-nav-controls > .button {
+            flex: 1 1 0;
+            min-width: 0;
+            min-height: 44px;
+            width: auto !important;
+            padding: 8px 6px !important;
+            font-size: 0.82rem !important;
+            white-space: nowrap;
+        }
+
+        .dashboard-nav-label-full {
+            display: none;
+        }
+
+        .dashboard-nav-label-short {
+            display: inline;
+        }
+    }
+
     @media (prefers-reduced-motion: reduce) {
         .student-attendance-button {
             transition: none;
@@ -77,12 +168,12 @@
 <div class="page-panel">
     <div class="grid-two">
         <div class="large-box">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
-                <div>
+            <div class="student-dashboard-header">
+                <div class="student-dashboard-intro">
                     <h2 class="page-title">Welcome, {{ $user['first_name'] }} </h2>
                     <p class="hero-copy">Your sport: {{ ucfirst($user['sport']) }} · Student ID: {{ $user['student_id'] }}</p>
                 </div>
-                <div style="display: grid; gap: 10px; text-align: right;">
+                <div class="student-dashboard-profile-badges">
                     <span class="badge">Year {{ $user['year_level'] }}</span>
                     <span class="badge">{{ $user['course'] }}</span>
                 </div>
@@ -135,11 +226,11 @@
                 <span class="badge">Month: {{ $monthName }} {{ $year }}</span>
 
                 <div class="dashboard-nav-controls">
-                    <a href="/student/dashboard?year={{ $prevYear }}&month={{ $prevMonth }}" class="button button-secondary" style="padding: 10px 14px; font-size: 0.9rem;"><i class="bi bi-chevron-left"></i> Previous</a>
+                    <a href="/student/dashboard?year={{ $prevYear }}&month={{ $prevMonth }}" class="button button-secondary"><i class="bi bi-chevron-left"></i> <span class="dashboard-nav-label-full">Previous</span><span class="dashboard-nav-label-short">Prev</span></a>
                     @if (!$isCurrentMonth)
-                        <a href="/student/dashboard" class="button button-primary" style="padding: 10px 14px; font-size: 0.9rem;">Today</a>
+                        <a href="/student/dashboard" class="button button-primary">Today</a>
                     @endif
-                    <a href="/student/dashboard?year={{ $nextYear }}&month={{ $nextMonth }}" class="button button-secondary" style="padding: 10px 14px; font-size: 0.9rem;">Next <i class="bi bi-chevron-right"></i></a>
+                    <a href="/student/dashboard?year={{ $nextYear }}&month={{ $nextMonth }}" class="button button-secondary"><span class="dashboard-nav-label-full">Next</span><span class="dashboard-nav-label-short">Next</span> <i class="bi bi-chevron-right"></i></a>
                 </div>
             </div>
 

@@ -1187,8 +1187,14 @@
             width: 100%;
         }
 
-        .password-wrapper .form-control {
-            padding-right: 84px;
+        .password-wrapper .form-control,
+        .password-wrapper .form-input {
+            padding-right: 48px;
+        }
+
+        .password-wrapper .form-control:focus,
+        .password-wrapper .form-input:focus {
+            transform: none;
         }
 
         .password-wrapper .button {
@@ -1197,20 +1203,39 @@
 
         .password-toggle {
             position: absolute;
-            right: 10px;
+            right: 8px;
             top: 50%;
             transform: translateY(-50%);
-            height: 40px;
-            width: 40px;
+            height: 30px;
+            width: 30px;
+            min-height: 30px;
+            min-width: 30px;
             display: inline-grid;
             place-items: center;
             border-radius: 999px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.06);
-            color: var(--um-white);
+            background: transparent;
+            border: 0;
+            color: rgba(255, 255, 255, 0.72);
             padding: 0;
+            box-shadow: none;
         }
-        .password-toggle i { font-size: 1.05rem; }
+
+        .password-toggle:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--um-gold);
+        }
+
+        .password-toggle:focus-visible {
+            outline: 2px solid var(--um-gold);
+            outline-offset: 1px;
+        }
+
+        .password-toggle:active {
+            transform: translateY(-50%);
+            box-shadow: none;
+        }
+
+        .password-toggle i { font-size: 0.9rem; }
 
         .checkbox-label {
             display: inline-flex;
@@ -2561,10 +2586,12 @@
             .topbar {
                 padding: 0.8rem 1rem;
                 gap: 0.75rem;
+                flex-wrap: nowrap;
             }
 
             .topbar-left {
                 min-width: 0;
+                width: auto;
                 flex: 1 1 auto;
             }
 
@@ -2584,6 +2611,14 @@
                 width: auto;
                 flex: 0 0 auto;
                 gap: 0.5rem;
+            }
+
+            .topbar > .profile-chip {
+                width: auto;
+                min-width: 0;
+                flex: 0 0 auto;
+                padding: 0.35rem;
+                gap: 0;
             }
 
             .profile-chip {
@@ -2665,21 +2700,24 @@
             }
 
             .topbar-left {
-                flex-basis: calc(100% - 7rem);
+                flex: 0 1 auto;
             }
 
             .topbar-actions {
                 gap: 0.35rem;
             }
 
-            .topbar-actions .profile-chip {
+            .topbar > .profile-chip {
                 max-width: 2.5rem;
                 min-width: 2.5rem;
+                width: 2.5rem;
+                height: 2.5rem;
                 justify-content: center;
                 border-radius: 50%;
+                padding: 0;
             }
 
-            .topbar-actions .profile-chip > div {
+            .topbar > .profile-chip .topbar-profile-copy {
                 display: none;
             }
 
@@ -2767,14 +2805,11 @@
                 white-space: nowrap;
             }
 
-            .topbar-actions .profile-chip {
-                padding: 0.25rem;
-            }
-
-            .topbar-actions .profile-chip .avatar {
+            .topbar > .profile-chip .avatar {
                 width: 2.5rem;
                 height: 2.5rem;
                 min-width: 2.5rem;
+                font-size: 0.82rem;
             }
         }
 
@@ -2797,6 +2832,10 @@
             .topbar-icon,
             .topbar-icon i {
                 flex: 0 0 auto;
+            }
+
+            .topbar > .profile-chip {
+                align-self: center;
             }
 
             .hero-actions,
@@ -2934,13 +2973,29 @@
 
             .topbar {
                 padding: 14px 16px;
-                flex-wrap: wrap;
+                flex-wrap: nowrap;
+                align-items: center;
                 gap: 12px;
             }
 
-            .topbar-left,
-            .topbar-actions {
-                width: 100%;
+            .topbar-left {
+                width: auto;
+                flex: 0 1 auto;
+            }
+
+            .topbar > .profile-chip {
+                width: 2.5rem;
+                height: 2.5rem;
+                min-width: 2.5rem;
+                max-width: 2.5rem;
+                flex: 0 0 2.5rem;
+                justify-content: center;
+                padding: 0;
+                border-radius: 50%;
+            }
+
+            .topbar > .profile-chip .topbar-profile-copy {
+                display: none;
             }
 
             .topbar-title {

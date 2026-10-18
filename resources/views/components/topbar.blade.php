@@ -3,7 +3,11 @@
 
     $user = Auth::user();
     $pageHeading = trim($__env->yieldContent('pageHeading') ?: str_replace(' | UM Attendance', '', $__env->yieldContent('title')));
-    $avatarLetters = strtoupper(substr(($user->first_name ?? 'U'), 0, 1).substr(($user->last_name ?? ''), 0, 1));
+    $profile = $user?->student ?? $user?->coach ?? $user?->superAdmin;
+    $firstName = $profile?->first_name ?? $user?->first_name ?? '';
+    $lastName = $profile?->last_name ?? $user?->last_name ?? '';
+    $avatarLetters = strtoupper(substr($firstName, 0, 1).substr($lastName, 0, 1));
+    $avatarLetters = $avatarLetters !== '' ? $avatarLetters : strtoupper(substr($user?->email ?? 'UM', 0, 2));
     $notificationCount = $user ? app(NotificationService::class)->unreadCount($user) : 0;
 @endphp
 
@@ -21,7 +25,7 @@
     <a href="{{ route('profile.show') }}" class="profile-chip" aria-label="Open profile">
         <span class="avatar">{{ $avatarLetters }}</span>
         <div class="topbar-profile-copy">
-            <div>{{ trim(($user->first_name ?? 'UM').' '.($user->last_name ?? '')) }}</div>
+            <div>{{ trim($firstName.' '.$lastName) ?: 'Account' }}</div>
             <small>{{ isset($user->role) ? ucfirst($user->role) : 'Member' }}</small>
         </div>
     </a>
