@@ -3527,7 +3527,7 @@
             z-index: 0;
             top: 50%;
             right: 2.5%;
-            width: min(46vw, 720px);
+            width: min(42vw, 700px);
             aspect-ratio: 822 / 470;
             transform: translateY(-50%);
             background: url('/images/um-wildcats-mark.png') center / contain no-repeat;
@@ -3540,13 +3540,19 @@
             position: relative;
             z-index: 1;
             width: min(1180px, 100%);
+            max-width: 1180px;
             justify-items: start;
             text-align: left;
         }
 
         .landing-hero-copy {
-            width: min(48%, 620px);
+            width: min(62%, 620px);
             text-align: left;
+        }
+
+        .landing-hero h1 {
+            font-size: clamp(2.7rem, 3.5vw, 3.4rem);
+            line-height: 1.08;
         }
 
         .landing-hero .landing-badge,
@@ -3667,6 +3673,16 @@
 
             .landing-login-panel {
                 padding: 48px 16px;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1100px) {
+            .landing-hero::after {
+                width: 28vw;
+            }
+
+            .landing-hero h1 {
+                font-size: clamp(2.4rem, 4vw, 2.9rem);
             }
         }
 
@@ -4093,6 +4109,32 @@
             background: rgba(255, 255, 255, 0.08);
             border-color: rgba(255, 255, 255, 0.16);
             color: #fff;
+        }
+
+        html[data-theme="light"] .toast-error {
+            background: #fce8e6;
+            border-color: #e7aaa4;
+            color: #6e1717;
+        }
+
+        html[data-theme="light"] .toast-error .toast-icon,
+        html[data-theme="light"] .toast-error .toast-content,
+        html[data-theme="light"] .toast-error .toast-content strong,
+        html[data-theme="light"] .toast-error .toast-content ul {
+            color: #6e1717;
+        }
+
+        html[data-theme="dark"] .toast-error {
+            background: #451c24;
+            border-color: rgba(255, 130, 130, 0.32);
+            color: #ffe5e2;
+        }
+
+        html[data-theme="dark"] .toast-error .toast-icon,
+        html[data-theme="dark"] .toast-error .toast-content,
+        html[data-theme="dark"] .toast-error .toast-content strong,
+        html[data-theme="dark"] .toast-error .toast-content ul {
+            color: #ffe5e2;
         }
 
         @media (max-width: 640px) {
