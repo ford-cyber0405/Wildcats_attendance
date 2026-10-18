@@ -92,6 +92,22 @@ class NotificationAndDashboardAuditTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('attendances', function ($table) {
+            $table->increments('id');
+            $table->unsignedInteger('student_id');
+            $table->unsignedInteger('training_schedule_id')->nullable();
+            $table->timestamp('time_in')->nullable();
+            $table->string('status');
+            $table->unsignedInteger('corrected_by')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('training_schedules', function ($table) {
+            $table->increments('id');
+            $table->date('training_date');
+            $table->timestamps();
+        });
+
         Schema::create('notifications', function ($table) {
             $table->increments('id');
             $table->unsignedInteger('user_id');
@@ -205,5 +221,63 @@ class NotificationAndDashboardAuditTest extends TestCase
             'related_type' => 'special_training_request',
         ]);
         $this->assertSame(1, Notification::where('user_id', $studentUser->id)->where('is_read', false)->count());
+    }
+
+    public function test_admin_can_delete_student_from_system_settings(): void
+    {
+        $sport = Sport::create(['name' => 'taekwondo']);
+        $admin = User::create([
+            'role' => 'super_admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('secret'),
+        ]);
+        $studentUser = User::create([
+            'role' => 'student',
+            'student_id_number' => '2024001',
+            'password' => bcrypt('secret'),
+        ]);
+        Student::create([
+            'user_id' => $studentUser->id,
+            'sport_id' => $sport->id,
+            'first_name' => 'Test',
+            'last_name' => 'Student',
+            'course' => 'BSIT',
+            'year_level' => '3rd',
+        ]);
+
+        $originalStoragePath = storage_path();
+        $temporaryStoragePath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'um-attendance-delete-' . uniqid();
+        $this->app->useStoragePath($temporaryStoragePath);
+
+        try {
+            $this->actingAs($admin)
+                ->post('/admin/student/2024001/delete')
+                ->assertRedirect();
+
+            $this->assertDatabaseMissing('users', ['id' => $studentUser->id]);
+            $this->assertDatabaseMissing('students', ['user_id' => $studentUser->id]);
+
+            $this->actingAs($admin)
+                ->get('/admin/system-settings')
+                ->assertOk()
+                ->assertDontSee('Test Student');
+        } finally {
+            $temporaryDataPath = $temporaryStoragePath . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'attendance_data.json';
+            $temporaryLockPath = $temporaryDataPath . '.lock';
+            if (file_exists($temporaryDataPath)) {
+                unlink($temporaryDataPath);
+            }
+            if (file_exists($temporaryLockPath)) {
+                unlink($temporaryLockPath);
+            }
+            $temporaryAppPath = dirname($temporaryDataPath);
+            if (is_dir($temporaryAppPath)) {
+                rmdir($temporaryAppPath);
+            }
+            if (is_dir($temporaryStoragePath)) {
+                rmdir($temporaryStoragePath);
+            }
+            $this->app->useStoragePath($originalStoragePath);
+        }
     }
 }

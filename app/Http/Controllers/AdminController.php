@@ -603,6 +603,15 @@ class AdminController extends Controller
             return redirect('/login');
         }
 
+        $studentUser = User::where('role', 'student')
+            ->where('student_id_number', $studentId)
+            ->firstOrFail();
+
+        DB::transaction(function () use ($studentUser) {
+            $studentUser->student()->delete();
+            $studentUser->delete();
+        });
+
         AttendanceStore::deleteUser($studentId);
         return back()->with('success', 'Student record deleted successfully.');
     }
