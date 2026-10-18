@@ -134,6 +134,23 @@
                     </div>
 
                 <div class="profile-side-panel">
+                    <section class="profile-meta-card appearance-settings" aria-labelledby="appearance-heading">
+                        <div>
+                            <h3 id="appearance-heading">Appearance</h3>
+                            <p>Choose the display theme used across this browser.</p>
+                        </div>
+                        <div class="appearance-setting">
+                            <div class="appearance-setting-copy">
+                                <strong>Dark mode</strong>
+                                <span>Use the dark maroon theme throughout the portal.</span>
+                            </div>
+                            <label class="theme-switch">
+                                <input id="dark-mode-toggle" type="checkbox" role="switch" aria-label="Enable dark mode">
+                                <span class="theme-switch-track" aria-hidden="true"></span>
+                            </label>
+                        </div>
+                    </section>
+
                     <div class="profile-picture-card" style="padding-top: 36px; padding-bottom: 26px;">
                         <h3>Profile Initials</h3>
                         <div class="avatar" style="font-size: 2.4rem; width: 140px; height: 140px; border-radius: 50%; display: grid; place-items: center;">{{ strtoupper(substr($user['first_name'], 0, 1).substr($user['last_name'], 0, 1)) }}</div>

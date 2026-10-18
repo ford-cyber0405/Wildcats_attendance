@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#32000F" />
+    <script>
+        try {
+            if (localStorage.getItem('um-attendance-theme') === 'light') {
+                document.documentElement.dataset.theme = 'light';
+            }
+        } catch (error) {
+            console.error('Unable to load the saved appearance preference.', error);
+        }
+    </script>
     <title>@yield('title', 'UM Taekwondo and Karatedo Attendance')</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
@@ -3490,6 +3499,413 @@
                 box-shadow: none;
             }
         }
+
+        .landing-page {
+            color: #35151a;
+            background: #f5f0e7;
+        }
+
+        .hero-page.landing-page > .landing-hero {
+            position: relative;
+            isolation: isolate;
+            min-height: min(860px, 100vh);
+            padding: 72px clamp(24px, 7vw, 112px);
+            background: linear-gradient(110deg, #fbf8f1 0%, #f5efe3 62%, #efe4cf 100%);
+            color: #35151a;
+            text-align: left;
+        }
+
+        .landing-hero::before {
+            display: none;
+        }
+
+        .landing-hero::after {
+            content: '';
+            position: absolute;
+            z-index: 0;
+            top: 50%;
+            right: 2.5%;
+            width: min(46vw, 720px);
+            aspect-ratio: 822 / 470;
+            transform: translateY(-50%);
+            background: url('/images/um-wildcats-mark.png') center / contain no-repeat;
+            mix-blend-mode: multiply;
+            opacity: 0.96;
+            pointer-events: none;
+        }
+
+        .landing-hero-inner {
+            position: relative;
+            z-index: 1;
+            width: min(1180px, 100%);
+            justify-items: start;
+            text-align: left;
+        }
+
+        .landing-hero-copy {
+            width: min(48%, 620px);
+            text-align: left;
+        }
+
+        .landing-hero .landing-badge,
+        .landing-login-panel .landing-badge {
+            border-color: rgba(128, 0, 0, 0.18);
+            background: rgba(128, 0, 0, 0.06);
+            color: #800000;
+        }
+
+        .landing-hero h1 {
+            color: #800000;
+            text-shadow: none;
+        }
+
+        .landing-hero h1 .page-title-subline {
+            color: #5a001a;
+        }
+
+        .landing-hero .landing-subtitle {
+            width: min(540px, 100%);
+            margin: 0 0 30px;
+            padding: 0;
+            color: #554044;
+            text-align: left;
+        }
+
+        .landing-hero .hero-actions {
+            margin-top: 22px;
+        }
+
+        .landing-hero .hero-actions .button {
+            min-width: 240px;
+            min-height: 62px;
+        }
+
+        .landing-login-panel {
+            padding: 72px 24px;
+            background: linear-gradient(180deg, #efe7d9 0%, #f7f3eb 100%);
+        }
+
+        .landing-login-panel .public-form-panel {
+            min-height: auto;
+            padding: 0;
+        }
+
+        .landing-login-panel .public-form-box {
+            background: rgba(255, 253, 248, 0.96);
+            border: 1px solid rgba(128, 0, 0, 0.13);
+            box-shadow: 0 24px 70px rgba(72, 38, 34, 0.12);
+            color: #35151a;
+        }
+
+        .landing-login-panel .landing-pill {
+            background: #800000;
+            color: #f4c542;
+        }
+
+        .landing-login-panel .public-form-heading .page-title {
+            color: #800000;
+        }
+
+        .landing-login-panel .landing-subtitle,
+        .landing-login-panel .public-login-form label {
+            color: #554044;
+        }
+
+        .landing-login-panel .public-login-form {
+            background: #f7f3eb;
+            border: 1px solid rgba(128, 0, 0, 0.1);
+            box-shadow: none;
+        }
+
+        .landing-login-panel .public-login-form .form-control {
+            color: #35151a;
+            background: #fffefa;
+            border-color: rgba(90, 0, 26, 0.2);
+        }
+
+        .landing-login-panel .public-login-form .form-control::placeholder {
+            color: #8b7776;
+        }
+
+        .landing-login-panel .button-secondary {
+            background: #fffefa;
+            border-color: rgba(128, 0, 0, 0.2);
+            color: #800000;
+        }
+
+        @media (max-width: 768px) {
+            .hero-page.landing-page > .landing-hero {
+                min-height: auto;
+                padding: 300px 24px 56px;
+                text-align: center;
+            }
+
+            .landing-hero::after {
+                top: 12px;
+                right: 50%;
+                width: min(92vw, 470px);
+                transform: translateX(50%);
+                opacity: 0.4;
+            }
+
+            .landing-hero-inner {
+                justify-items: center;
+                text-align: center;
+            }
+
+            .landing-hero-copy {
+                width: 100%;
+                text-align: center;
+            }
+
+            .landing-hero .landing-subtitle {
+                margin: 0 auto 24px;
+                text-align: center;
+            }
+
+            .landing-login-panel {
+                padding: 48px 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-page.landing-page > .landing-hero {
+                padding: 245px 20px 44px;
+            }
+
+            .landing-hero::after {
+                width: min(94vw, 380px);
+            }
+        }
+
+        .appearance-setting {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+        }
+
+        .appearance-setting-copy {
+            display: grid;
+            gap: 5px;
+        }
+
+        .appearance-setting-copy strong {
+            color: var(--um-white);
+        }
+
+        .appearance-setting-copy span {
+            color: var(--um-gray);
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        .theme-switch {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            flex: 0 0 auto;
+            width: 54px;
+            height: 32px;
+            cursor: pointer;
+        }
+
+        .theme-switch input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+        }
+
+        .theme-switch-track {
+            position: absolute;
+            inset: 0;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .theme-switch-track::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+            transition: transform 0.2s ease;
+        }
+
+        .theme-switch input:checked + .theme-switch-track {
+            background: var(--um-maroon);
+            border-color: var(--um-gold);
+        }
+
+        .theme-switch input:checked + .theme-switch-track::after {
+            transform: translateX(22px);
+            background: var(--um-gold);
+        }
+
+        .theme-switch input:focus-visible + .theme-switch-track {
+            outline: 3px solid var(--um-bright-gold);
+            outline-offset: 3px;
+        }
+
+        html[data-theme="light"] {
+            color-scheme: light;
+            --um-white: #302124;
+            --um-offwhite: #514247;
+            --um-dark: #fffdf9;
+            --um-charcoal: #302124;
+            --um-gray: #76686b;
+            --surface: #fffdf9;
+            --surface-soft: #f5eee5;
+            --surface-strong: #eee4d8;
+            --shadow: 0 20px 50px rgba(61, 34, 36, 0.12);
+        }
+
+        html[data-theme="light"] body {
+            background: #f5f0e7;
+            color: #302124;
+        }
+
+        html[data-theme="light"] body::before {
+            background: radial-gradient(circle at center, rgba(128, 0, 0, 0.06), transparent 38%);
+        }
+
+        html[data-theme="light"] .sidebar {
+            background: linear-gradient(180deg, #f8f1e7, #eee2d2);
+            border-right-color: rgba(128, 0, 0, 0.12);
+            box-shadow: 8px 0 32px rgba(61, 34, 36, 0.1);
+        }
+
+        html[data-theme="light"] .sidebar-header {
+            border-bottom-color: rgba(128, 0, 0, 0.12);
+        }
+
+        html[data-theme="light"] .nav-item {
+            color: #49383d;
+        }
+
+        html[data-theme="light"] .nav-item:hover,
+        html[data-theme="light"] .nav-item.active {
+            background: rgba(128, 0, 0, 0.08);
+            border-color: rgba(128, 0, 0, 0.14);
+            box-shadow: none;
+        }
+
+        html[data-theme="light"] .nav-icon,
+        html[data-theme="light"] .sidebar-footer {
+            background: rgba(128, 0, 0, 0.07);
+        }
+
+        html[data-theme="light"] .topbar {
+            background: rgba(255, 253, 249, 0.94);
+            border-bottom-color: rgba(128, 0, 0, 0.12);
+            box-shadow: 0 8px 26px rgba(61, 34, 36, 0.06);
+        }
+
+        html[data-theme="light"] .icon-btn,
+        html[data-theme="light"] .mobile-nav-toggle,
+        html[data-theme="light"] .profile-chip {
+            background: #fffdf9;
+            border-color: rgba(128, 0, 0, 0.14);
+            color: #302124;
+        }
+
+        html[data-theme="light"] .large-box,
+        html[data-theme="light"] .notification-card {
+            background: #fffdf9;
+            border-color: rgba(128, 0, 0, 0.1);
+            box-shadow: 0 24px 60px rgba(61, 34, 36, 0.08);
+        }
+
+        html[data-theme="light"] .form-panel,
+        html[data-theme="light"] .form-card,
+        html[data-theme="light"] .stats-card,
+        html[data-theme="light"] .activity-card,
+        html[data-theme="light"] .table-card,
+        html[data-theme="light"] .profile-panel,
+        html[data-theme="light"] .profile-meta-card,
+        html[data-theme="light"] .profile-picture-card,
+        html[data-theme="light"] .section-card,
+        html[data-theme="light"] .calendar-cell,
+        html[data-theme="light"] .student-card,
+        html[data-theme="light"] .coach-card,
+        html[data-theme="light"] .announcement-card {
+            background: #fffdf9;
+            border-color: rgba(128, 0, 0, 0.12);
+            box-shadow: 0 12px 32px rgba(61, 34, 36, 0.07);
+            color: #302124;
+        }
+
+        html[data-theme="light"] .profile-meta-detail,
+        html[data-theme="light"] .stat-block {
+            background: #f5eee5;
+            border-color: rgba(128, 0, 0, 0.1);
+        }
+
+        html[data-theme="light"] .page-title {
+            background: none;
+            color: #800000;
+            -webkit-text-fill-color: #800000;
+        }
+
+        html[data-theme="light"] .hero-copy,
+        html[data-theme="light"] .page-subtitle {
+            color: #66575b;
+        }
+
+        html[data-theme="light"] .button-primary,
+        html[data-theme="light"] button.button-primary {
+            color: #fff;
+        }
+
+        html[data-theme="light"] .button-secondary,
+        html[data-theme="light"] button.button-secondary {
+            background: #fffdf9;
+            border-color: rgba(128, 0, 0, 0.2);
+            color: #800000;
+            box-shadow: none;
+        }
+
+        html[data-theme="light"] .form-control,
+        html[data-theme="light"] .form-input,
+        html[data-theme="light"] .form-file,
+        html[data-theme="light"] .form-select,
+        html[data-theme="light"] .form-textarea {
+            background: #fffdf9;
+            border-color: rgba(90, 0, 26, 0.2);
+            color: #302124;
+        }
+
+        html[data-theme="light"] .form-control::placeholder,
+        html[data-theme="light"] .form-input::placeholder,
+        html[data-theme="light"] .form-textarea::placeholder {
+            color: #8b7776;
+        }
+
+        html[data-theme="light"] .password-toggle {
+            color: #66575b;
+        }
+
+        html[data-theme="light"] .status-chip.info {
+            background: #f0e7dc;
+            color: #49383d;
+        }
+
+        html[data-theme="light"] .landing-login-panel {
+            background: linear-gradient(180deg, #efe7d9 0%, #f7f3eb 100%);
+        }
+
+        @media (max-width: 640px) {
+            .appearance-setting {
+                align-items: flex-start;
+            }
+        }
     </style>
 </head>
 <body>
@@ -3633,6 +4049,41 @@
                     modal.style.display = 'none';
                     pendingForm.submit();
                     pendingForm = null;
+                }
+            });
+
+            var darkModeToggle = document.getElementById('dark-mode-toggle');
+            if (darkModeToggle) {
+                darkModeToggle.checked = document.documentElement.dataset.theme !== 'light';
+                darkModeToggle.addEventListener('change', function () {
+                    var theme = darkModeToggle.checked ? 'dark' : 'light';
+                    if (theme === 'light') {
+                        document.documentElement.dataset.theme = 'light';
+                    } else {
+                        document.documentElement.removeAttribute('data-theme');
+                    }
+
+                    try {
+                        localStorage.setItem('um-attendance-theme', theme);
+                    } catch (err) {
+                        console.error('Unable to save the appearance preference.', err);
+                    }
+                });
+            }
+
+            window.addEventListener('storage', function (event) {
+                if (event.key !== 'um-attendance-theme') {
+                    return;
+                }
+
+                if (event.newValue === 'light') {
+                    document.documentElement.dataset.theme = 'light';
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+
+                if (darkModeToggle) {
+                    darkModeToggle.checked = event.newValue !== 'light';
                 }
             });
 
