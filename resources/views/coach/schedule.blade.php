@@ -116,7 +116,7 @@
 </div>
                     </form>
                     @if($item)
-                        <form method="POST" action="/coach/schedule/{{ $sport }}/{{ $date }}/delete" style="margin-top: 8px;" data-delete-schedule>
+                        <form method="POST" action="/coach/schedule/{{ $sport }}/{{ $date }}/delete" class="confirm-delete" data-name="{{ ucfirst($sport) }} schedule for {{ date('F j, Y', strtotime($date)) }}" style="margin-top: 8px;">
                             @csrf
                             <button type="submit" class="button button-danger">Delete</button>
                         </form>

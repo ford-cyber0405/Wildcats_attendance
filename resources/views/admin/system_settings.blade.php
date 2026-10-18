@@ -48,7 +48,7 @@
                     </div>
                     <div class="stat-grid" style="margin-top: 12px; display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
                         <a href="/admin/student/{{ $student['student_id'] }}/edit" class="button button-secondary" style="min-height: auto; padding: 12px 18px;">Edit Status</a>
-                        <form method="POST" action="/admin/student/{{ $student['student_id'] }}/delete" style="margin:0;">
+                        <form method="POST" action="/admin/student/{{ $student['student_id'] }}/delete" class="confirm-delete" data-name="{{ $student['first_name'] ?? 'this student' }}" style="margin:0;">
                             @csrf
                             <button type="submit" class="button button-absent" style="min-height: auto; padding: 12px 18px;">Delete</button>
                         </form>

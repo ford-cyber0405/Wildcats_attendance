@@ -3375,6 +3375,30 @@
         }
 
         @media (max-width: 780px) {
+            .coach-columns {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr);
+                width: 100%;
+                min-width: 0;
+            }
+
+            .coach-column {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .coach-card {
+                width: 100%;
+                min-width: 0;
+                max-width: none;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .coach-actions {
+                width: 100%;
+            }
+
             .month-navigation {
                 width: 100%;
                 flex-wrap: nowrap !important;
@@ -3387,6 +3411,83 @@
                 min-height: 44px;
                 padding: 10px 12px;
                 white-space: nowrap;
+            }
+        }
+
+        body {
+            background: #20050d;
+        }
+
+        body::before {
+            display: none;
+        }
+
+        .content-wrapper,
+        .page-panel {
+            width: 100%;
+            max-width: none;
+        }
+
+        @media (max-width: 768px) {
+            .app-shell,
+            .main-area {
+                width: 100%;
+                max-width: 100%;
+                min-height: 100dvh;
+            }
+
+            .page-content {
+                flex: 1 0 auto;
+                width: 100%;
+                padding: 0;
+            }
+
+            .content-wrapper {
+                width: 100%;
+                max-width: none;
+                margin: 0;
+                animation: none;
+            }
+
+            .page-panel {
+                width: 100%;
+                max-width: none;
+                margin: 0;
+                padding: 0 !important;
+                gap: 0;
+            }
+
+            .page-panel > .large-box,
+            .large-box {
+                width: 100%;
+                max-width: none;
+                margin: 0;
+                padding: 16px 14px calc(16px + env(safe-area-inset-bottom)) !important;
+                border: 0;
+                border-radius: 0;
+                background: transparent;
+                box-shadow: none;
+            }
+
+            .large-box::before {
+                display: none;
+            }
+
+            .public-form-panel {
+                width: 100%;
+                min-height: 100dvh;
+                padding: 12px;
+            }
+
+            .public-form-box,
+            .public-form-box.register-form-box {
+                width: 100%;
+                max-width: none;
+                padding: 20px 14px;
+                border: 0;
+                border-radius: 0;
+                background: transparent;
+                box-shadow: none;
             }
         }
     </style>

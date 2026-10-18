@@ -63,7 +63,7 @@
                                         <h3>{{ $announcement['title'] }}</h3>
                                     </div>
                                     <div style="margin-left:auto; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-                                        <form method="POST" action="/coach/announcements/{{ $announcement['id'] }}/delete" style="margin:0;">
+                                        <form method="POST" action="/coach/announcements/{{ $announcement['id'] }}/delete" class="confirm-delete" data-name="{{ $announcement['title'] }}" style="margin:0;">
                                             @csrf
                                             <button type="submit" class="button button-danger">Delete</button>
                                         </form>

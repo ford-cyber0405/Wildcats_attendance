@@ -43,6 +43,11 @@
         transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
     }
 
+    .student-attendance-button.button-present {
+        background: linear-gradient(145deg, #ffe58a 0%, #f4c542 48%, #d4af37 100%);
+        color: #35000f;
+    }
+
     .student-attendance-button i {
         font-size: 2rem;
         line-height: 1;
