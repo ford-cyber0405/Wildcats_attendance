@@ -18,7 +18,7 @@
                     </select>
                 </form>
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div class="month-navigation">
                 <a href="/admin/schedule/{{ $sport }}?month={{ $prevMonth }}" class="button button-secondary">&laquo; Prev</a>
                 <a href="/admin/schedule/{{ $sport }}?month={{ $nextMonth }}" class="button button-secondary">Next &raquo;</a>
             </div>

@@ -113,21 +113,21 @@
                                 <label class="form-label">Current Password</label>
                                 <div class="password-wrapper">
                                     <input type="password" name="current_password" class="form-input" placeholder="Current password" />
-                                    <button type="button" class="button password-toggle" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                                    <button type="button" class="password-toggle" aria-label="Show password"><i class="bi bi-eye"></i></button>
                                 </div>
                             </div>
                             <div>
                                 <label class="form-label">New Password</label>
                                 <div class="password-wrapper">
                                     <input type="password" name="password" class="form-input" placeholder="New password" />
-                                    <button type="button" class="button password-toggle" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                                    <button type="button" class="password-toggle" aria-label="Show password"><i class="bi bi-eye"></i></button>
                                 </div>
                             </div>
                             <div>
                                 <label class="form-label">Confirm New Password</label>
                                 <div class="password-wrapper">
                                     <input type="password" name="password_confirmation" class="form-input" placeholder="Confirm new password" />
-                                    <button type="button" class="button password-toggle" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                                    <button type="button" class="password-toggle" aria-label="Show password"><i class="bi bi-eye"></i></button>
                                 </div>
                             </div>
                         </div>

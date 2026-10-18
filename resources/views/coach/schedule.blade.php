@@ -32,7 +32,7 @@
                     <input type="month" name="month" id="month" value="{{ $monthKey }}" onchange="this.form.submit()" class="form-control schedule-month-picker" aria-label="Select schedule month" />
                 </form>
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div class="month-navigation">
                 <a href="/coach/schedule/{{ $sport }}?month={{ $prevMonth }}" class="button button-secondary">&laquo; Prev</a>
                 <a href="/coach/schedule/{{ $sport }}?month={{ $nextMonth }}" class="button button-secondary">Next &raquo;</a>
             </div>

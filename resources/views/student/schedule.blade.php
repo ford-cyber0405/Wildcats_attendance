@@ -19,7 +19,7 @@
                     </select>
                 </form>
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div class="month-navigation">
                 <a href="/student/schedule?month={{ $prevMonth }}" class="button button-secondary">&laquo; Prev</a>
                 <a href="/student/schedule?month={{ $nextMonth }}" class="button button-secondary">Next &raquo;</a>
             </div>

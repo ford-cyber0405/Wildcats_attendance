@@ -1197,7 +1197,7 @@
             transform: none;
         }
 
-        .password-wrapper .button {
+        .password-wrapper .password-toggle {
             z-index: 2;
         }
 
@@ -3329,6 +3329,66 @@
         .form-label { display:block; margin-bottom:8px; color:var(--um-offwhite); font-weight:700; }
         .form-control::placeholder { color: rgba(255,255,255,0.26); }
         .form-control { background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); }
+
+        .month-navigation {
+            display: flex;
+            flex-flow: row nowrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .month-navigation > .button {
+            flex: 1 1 0;
+            min-width: 0;
+            max-width: none;
+            width: auto;
+        }
+
+        .password-wrapper > .password-toggle {
+            width: 28px;
+            min-width: 28px;
+            max-width: 28px;
+            height: 28px;
+            min-height: 28px;
+            max-height: 28px;
+            margin: 0;
+            padding: 0;
+            transform: translateY(-50%);
+        }
+
+        .password-wrapper > .form-control,
+        .password-wrapper > .form-input {
+            padding-right: 46px;
+        }
+
+        .password-wrapper > .form-control:focus,
+        .password-wrapper > .form-input:focus {
+            transform: none;
+        }
+
+        .password-wrapper > .password-toggle:hover {
+            transform: translateY(-50%);
+        }
+
+        .password-wrapper > .password-toggle:active {
+            transform: translateY(-50%);
+        }
+
+        @media (max-width: 780px) {
+            .month-navigation {
+                width: 100%;
+                flex-wrap: nowrap !important;
+            }
+
+            .month-navigation > .button {
+                flex: 1 1 0;
+                min-width: 0;
+                width: auto !important;
+                min-height: 44px;
+                padding: 10px 12px;
+                white-space: nowrap;
+            }
+        }
     </style>
 </head>
 <body>

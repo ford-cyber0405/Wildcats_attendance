@@ -29,7 +29,7 @@
                     <button type="submit" class="button button-secondary coach-date-button">Go</button>
                 </form>
 
-                <div class="student-nav-row" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                <div class="student-nav-row month-navigation">
                     <a href="/student/roster?year={{ $prevMonthYear }}&month={{ $prevMonthValue }}" class="button button-secondary coach-nav-button">Prev</a>
                     <a href="/student/roster?year={{ $nextMonthYear }}&month={{ $nextMonthValue }}" class="button button-secondary coach-nav-button">Next</a>
                 </div>

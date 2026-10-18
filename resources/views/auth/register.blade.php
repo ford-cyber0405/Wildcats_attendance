@@ -95,14 +95,14 @@
                         <label for="password">Password</label>
                         <div class="password-wrapper">
                             <input id="password" type="password" name="password" required minlength="6" autocomplete="new-password" class="form-control" placeholder="Enter a secure password" />
-                            <button type="button" class="button password-toggle" aria-label="Show password" aria-pressed="false" title="Show password"><i class="bi bi-eye" aria-hidden="true"></i></button>
+                            <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false" title="Show password"><i class="bi bi-eye" aria-hidden="true"></i></button>
                         </div>
                     </div>
                     <div class="field-group">
                         <label for="password_confirmation">Confirm Password</label>
                         <div class="password-wrapper">
                             <input id="password_confirmation" type="password" name="password_confirmation" required minlength="6" autocomplete="new-password" class="form-control" placeholder="Re-enter password" />
-                            <button type="button" class="button password-toggle" aria-label="Show password" aria-pressed="false" title="Show password"><i class="bi bi-eye" aria-hidden="true"></i></button>
+                            <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false" title="Show password"><i class="bi bi-eye" aria-hidden="true"></i></button>
                         </div>
                     </div>
                 </div>

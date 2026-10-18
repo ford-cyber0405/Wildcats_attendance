@@ -22,7 +22,7 @@
                 <label for="password">Password</label>
                 <div class="password-wrapper">
                     <input id="password" type="password" name="password" placeholder="Enter your password" required class="form-control" />
-                    <button type="button" class="button password-toggle" aria-label="Show password" aria-pressed="false" title="Show password"><i class="bi bi-eye" aria-hidden="true"></i></button>
+                    <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false" title="Show password"><i class="bi bi-eye" aria-hidden="true"></i></button>
                 </div>
             </div>
             <div class="hero-actions public-login-actions">

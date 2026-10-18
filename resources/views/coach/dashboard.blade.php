@@ -27,7 +27,7 @@
                     <button type="submit" class="button button-secondary coach-date-button">Go</button>
                 </form>
 
-                <div class="dashboard-action-row" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                <div class="dashboard-action-row month-navigation">
                     <a href="/coach/dashboard?year={{ $year }}&month={{ max(1, $month - 1) }}" class="button button-secondary coach-nav-button">Prev</a>
                     <a href="/coach/dashboard?year={{ $year }}&month={{ min(12, $month + 1) }}" class="button button-secondary coach-nav-button">Next</a>
                 </div>

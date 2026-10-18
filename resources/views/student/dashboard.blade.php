@@ -225,7 +225,7 @@
             <div class="dashboard-nav-row" style="margin-top: 14px;">
                 <span class="badge">Month: {{ $monthName }} {{ $year }}</span>
 
-                <div class="dashboard-nav-controls">
+                <div class="dashboard-nav-controls month-navigation">
                     <a href="/student/dashboard?year={{ $prevYear }}&month={{ $prevMonth }}" class="button button-secondary"><i class="bi bi-chevron-left"></i> <span class="dashboard-nav-label-full">Previous</span><span class="dashboard-nav-label-short">Prev</span></a>
                     @if (!$isCurrentMonth)
                         <a href="/student/dashboard" class="button button-primary">Today</a>

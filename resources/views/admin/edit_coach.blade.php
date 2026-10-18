@@ -64,7 +64,7 @@
                     <label for="password">Password (leave blank to keep)</label>
                     <div class="password-wrapper">
                         <input id="password" name="password" type="password" class="form-control" />
-                        <button type="button" class="button password-toggle" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                        <button type="button" class="password-toggle" aria-label="Show password"><i class="bi bi-eye"></i></button>
                     </div>
                 </div>
             </div>
@@ -74,7 +74,7 @@
                     <label for="password_confirmation">Confirm Password</label>
                     <div class="password-wrapper">
                         <input id="password_confirmation" name="password_confirmation" type="password" class="form-control" />
-                        <button type="button" class="button password-toggle" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                        <button type="button" class="password-toggle" aria-label="Show password"><i class="bi bi-eye"></i></button>
                     </div>
                 </div>
                 <div class="field-group"></div>
